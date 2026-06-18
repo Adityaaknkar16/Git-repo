@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { 
   GitBranch, GitPullRequest, ShieldAlert, Cpu, BarChart2, 
-  GitCompare, Settings, PlayCircle, Layers, Users, FileText, Download 
+  GitCompare, Settings, PlayCircle, Layers, Users, FileText, Download,
+  Award, Flame
 } from 'lucide-react';
 import LanguageChart from './component/LanguageChart.jsx';
 import DependencyGraph from './component/DependencyGraph.jsx';
@@ -17,6 +18,13 @@ import CollaborationMap from './component/CollaborationMap.jsx';
 import CodeQualityMetrics from './component/CodeQualityMetrics.jsx';
 import AIInsights from './component/AIInsights.jsx';
 import FileTree from './FileTree.jsx';
+
+// Import New Components
+import HealthScore from './component/HealthScore.jsx';
+import DeveloperPersonas from './component/DeveloperPersonas.jsx';
+import BattleMode from './component/BattleMode.jsx';
+import BusFactor from './component/BusFactor.jsx';
+import OnboardingGuide from './component/OnboardingGuide.jsx';
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5001';
 
@@ -76,8 +84,19 @@ export default function App() {
     alert('Dashboard exported to PNG successfully! (Check your browser downloads folder)');
   };
 
+  // Listen for query parameter tab updates
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const tab = params.get('tab');
+    if (tab && ['overview', 'health', 'battle', 'commits', 'playback', 'compare', 'prs', 'contributors', 'quality', 'dependencies', 'onboarding', 'ai'].includes(tab)) {
+      setActiveTab(tab);
+    }
+  }, []);
+
   const tabs = [
     { id: 'overview', name: 'Overview', icon: <Layers size={16} /> },
+    { id: 'health', name: 'Health Score', icon: <Award size={16} /> },
+    { id: 'battle', name: 'Battle Mode', icon: <Flame size={16} /> },
     { id: 'commits', name: 'Commit Graph', icon: <GitBranch size={16} /> },
     { id: 'playback', name: 'Timeline Playback', icon: <PlayCircle size={16} /> },
     { id: 'compare', name: 'Branch Compare', icon: <GitCompare size={16} /> },
@@ -85,6 +104,7 @@ export default function App() {
     { id: 'contributors', name: 'Collaboration', icon: <Users size={16} /> },
     { id: 'quality', name: 'Code Quality', icon: <BarChart2 size={16} /> },
     { id: 'dependencies', name: 'Dependencies', icon: <Settings size={16} /> },
+    { id: 'onboarding', name: 'Onboarding Guide', icon: <FileText size={16} /> },
     { id: 'ai', name: 'AI Insights', icon: <Cpu size={16} /> },
   ];
 
@@ -117,14 +137,19 @@ export default function App() {
         )}
       </header>
 
-      {data.repoInfo && (
+      {(data.repoInfo || activeTab === 'battle') && (
         <div className="dashboard-container">
           <aside className="sidebar glass-panel">
             {tabs.map(tab => (
               <button 
                 key={tab.id} 
                 className={`tab-btn ${activeTab === tab.id ? 'active' : ''}`}
-                onClick={() => setActiveTab(tab.id)}
+                onClick={() => {
+                  setActiveTab(tab.id);
+                  // Update tab parameter in URL query
+                  const newUrl = `${window.location.origin}${window.location.pathname}?tab=${tab.id}`;
+                  window.history.pushState({ path: newUrl }, '', newUrl);
+                }}
               >
                 {tab.icon}
                 <span>{tab.name}</span>
@@ -150,11 +175,26 @@ export default function App() {
               </div>
             )}
 
+            {activeTab === 'health' && (
+              <div className="grid-single">
+                <section className="card">
+                  <h2>Repository Health Score</h2>
+                  <HealthScore repoUrl={repoUrl} />
+                </section>
+              </div>
+            )}
+
+            {activeTab === 'battle' && (
+              <div className="grid-single">
+                <BattleMode />
+              </div>
+            )}
+
             {activeTab === 'commits' && (
               <div className="grid-single">
                 <section className="card">
                   <h2>Interactive Commit Network Graph</h2>
-                  <CommitGraph commits={data.commitHistory} defaultBranch={data.repoInfo.defaultBranch} />
+                  <CommitGraph commits={data.commitHistory} defaultBranch={data.repoInfo?.defaultBranch || 'main'} />
                 </section>
               </div>
             )}
@@ -167,7 +207,7 @@ export default function App() {
                 </section>
                 <section className="card">
                   <h2>Historical Commit Evolution</h2>
-                  <CommitGraph commits={timelineCommits} defaultBranch={data.repoInfo.defaultBranch} />
+                  <CommitGraph commits={timelineCommits} defaultBranch={data.repoInfo?.defaultBranch || 'main'} />
                 </section>
               </div>
             )}
@@ -210,28 +250,37 @@ export default function App() {
             )}
 
             {activeTab === 'contributors' && (
-              <div className="grid">
+              <div className="grid-single">
                 <section className="card">
-                  <h2>Contributor Insights Heatmap</h2>
-                  <ContributorHeatmap contributors={data.contributors} commitHistory={data.commitHistory} />
+                  <h2>Developer Persona Cards</h2>
+                  <DeveloperPersonas contributors={data.contributors} />
                 </section>
-                <section className="card">
-                  <h2>Collaboration & Review Map</h2>
-                  <CollaborationMap contributors={data.contributors} />
-                </section>
+                <div className="grid">
+                  <section className="card">
+                    <h2>Contributor Insights Heatmap</h2>
+                    <ContributorHeatmap contributors={data.contributors} commitHistory={data.commitHistory} />
+                  </section>
+                  <section className="card">
+                    <h2>Collaboration & Review Map</h2>
+                    <CollaborationMap contributors={data.contributors} />
+                  </section>
+                </div>
               </div>
             )}
 
             {activeTab === 'quality' && (
-              <div className="grid">
-                <section className="card">
-                  <h2>Code Quality Analytics</h2>
-                  <CodeQualityMetrics />
-                </section>
-                <section className="card">
-                  <h2>File Hotspots Explorer</h2>
-                  <FileHotspots hotspots={data.fileHotspots} />
-                </section>
+              <div className="grid-single">
+                <BusFactor busFactorInfo={data.busFactorInfo} />
+                <div className="grid">
+                  <section className="card">
+                    <h2>Code Quality Analytics</h2>
+                    <CodeQualityMetrics />
+                  </section>
+                  <section className="card">
+                    <h2>File Hotspots Explorer</h2>
+                    <FileHotspots hotspots={data.fileHotspots} />
+                  </section>
+                </div>
               </div>
             )}
 
@@ -241,6 +290,17 @@ export default function App() {
                   <h2>Dependency Graph & Security Advisory</h2>
                   <DependencyGraph dependencies={data.dependencies} />
                 </section>
+              </div>
+            )}
+
+            {activeTab === 'onboarding' && (
+              <div className="grid-single">
+                <OnboardingGuide 
+                  repoUrl={repoUrl} 
+                  dependencies={data.dependencies} 
+                  fileTree={data.fileTree} 
+                  issues={data.issues} 
+                />
               </div>
             )}
 
@@ -261,12 +321,15 @@ export default function App() {
         </div>
       )}
 
-      {!data.repoInfo && (
+      {!data.repoInfo && activeTab !== 'battle' && (
         <div className="empty-state">
           <Layers size={48} className="empty-icon" />
           <h2>Welcome to Git Repository Visualizer</h2>
           <p>Provide a public GitHub repository link above to start or load sample data directly.</p>
-          <button className="demo-btn-large" onClick={loadDemo}>Explore Demo Workspace</button>
+          <div style={{ display: 'flex', gap: '12px', marginTop: '12px' }}>
+            <button className="demo-btn-large" onClick={loadDemo}>Explore Demo Workspace</button>
+            <button className="demo-btn-large" style={{ background: 'linear-gradient(135deg, #ffb703, #ff5555)' }} onClick={() => setActiveTab('battle')}>⚔️ Enter Battle Mode</button>
+          </div>
         </div>
       )}
 
