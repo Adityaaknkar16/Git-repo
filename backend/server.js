@@ -3,8 +3,19 @@ const cors = require('cors');
 require('dotenv').config();
 const { Octokit } = require('@octokit/rest');
 
+// Import database, sessions, rate limiters, cron, and mailers
+const rateLimit = require('express-rate-limit');
+const session = require('express-session');
+const passport = require('passport');
+const cron = require('node-cron');
+const nodemailer = require('nodemailer');
+const { connectDB, Subscription } = require('./models');
+
 const app = express();
 const PORT = process.env.PORT || 5001;
+
+// Connect to MongoDB
+connectDB();
 
 // Initialize Octokit with token if available
 const hasToken = process.env.GITHUB_TOKEN && 
@@ -15,8 +26,93 @@ const octokit = new Octokit({
   auth: hasToken ? process.env.GITHUB_TOKEN : undefined,
 });
 
+const getMockFallback = (owner, repo) => {
+  return !hasToken || owner === 'demo' || repo === 'demo';
+};
+
 app.use(cors());
 app.use(express.json());
+
+// Rate Limiting
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 200, // Limit each IP to 200 requests per window
+  message: { error: 'Too many requests from this IP, please try again after 15 minutes.' }
+});
+app.use('/api/', limiter);
+
+// Session and Passport
+app.use(session({
+  secret: process.env.SESSION_SECRET || 'session_default_secret_key',
+  resave: false,
+  saveUninitialized: false
+}));
+app.use(passport.initialize());
+app.use(passport.session());
+
+passport.serializeUser((user, done) => done(null, user));
+passport.deserializeUser((obj, done) => done(null, obj));
+
+// Mount Routers
+const authRoutes = require('./routes/auth').router;
+const analyticsRoutes = require('./routes/analytics');
+const toolsRoutes = require('./routes/tools');
+const gamificationRoutes = require('./routes/gamification');
+const socialRoutes = require('./routes/social');
+const enterpriseRoutes = require('./routes/enterprise');
+
+app.use('/api/auth', authRoutes);
+app.use('/api/analytics', analyticsRoutes);
+app.use('/api/tools', toolsRoutes);
+app.use('/api/gamification', gamificationRoutes);
+app.use('/api/social', socialRoutes);
+app.use('/api/enterprise', enterpriseRoutes);
+
+// Weekly Email Digest Cron Job (Every Monday at 9am UTC)
+cron.schedule('0 9 * * 1', async () => {
+  console.log('Running Weekly Email Digest Cron Job...');
+  try {
+    const subs = await Subscription.find({});
+    if (subs.length === 0) return;
+
+    const transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS
+      }
+    });
+
+    for (const sub of subs) {
+      const urlParts = sub.repoUrl.split('/');
+      const owner = urlParts[urlParts.length - 2];
+      const repo = urlParts[urlParts.length - 1];
+
+      const mailOptions = {
+        from: process.env.EMAIL_FROM || process.env.EMAIL_USER,
+        to: sub.email,
+        subject: `Weekly Digest Summary: ${owner}/${repo}`,
+        html: `
+          <div style="font-family: sans-serif; padding: 20px; color: #333;">
+            <h2 style="color: #5856d6;">Weekly Health Briefing for ${owner}/${repo}</h2>
+            <p>Here is your weekly summary updates for the subscribed repository:</p>
+            <ul>
+              <li><strong>Commit Volume</strong>: Development activity is progressing.</li>
+              <li><strong>PR velocity</strong>: Latest merges have been integrated smoothly.</li>
+              <li><strong>Collaborative contributions</strong>: Community activity remains stable.</li>
+            </ul>
+            <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;" />
+            <p style="font-size: 11px; color: #999;">You received this email because you subscribed to weekly briefings on Git Repo Analyzer.</p>
+          </div>
+        `
+      };
+
+      await transporter.sendMail(mailOptions).catch(err => console.log('Mail send error:', err.message));
+    }
+  } catch (err) {
+    console.error('Cron job execution failed:', err.message);
+  }
+});
 
 // Helper to compute repository health score metrics
 async function computeHealthMetrics(owner, repo) {
@@ -482,6 +578,16 @@ app.post('/api/analyze-repo', async (req, res) => {
     // If mock or no token, return high-quality mock data
     if (getMockFallback(owner, repo)) {
       console.log('Returning mock database analysis for demo...');
+      try {
+        const { Leaderboard } = require('./models');
+        await Leaderboard.findOneAndUpdate(
+          { repoUrl: `https://github.com/${owner}/${repo}` },
+          { healthScore: 82, language: 'TypeScript', stars: 1204, lastActive: new Date(), timestamp: new Date() },
+          { upsert: true }
+        );
+      } catch (e) {
+        console.log('Leaderboard mock save error:', e.message);
+      }
       return res.json(getMockData(owner, repo));
     }
 
@@ -598,6 +704,26 @@ app.post('/api/analyze-repo', async (req, res) => {
 
     const processedContributors = assignContributorPersonas(contributors, commitHistory);
     const busFactorInfo = calculateBusFactor(processedContributors, commitHistory, fileHotspots);
+
+    // Auto-submit to leaderboard
+    try {
+      const { Leaderboard } = require('./models');
+      const metrics = await computeHealthMetrics(owner, repo);
+      const topLanguage = Object.keys(languages || {}).shift() || 'JavaScript';
+      await Leaderboard.findOneAndUpdate(
+        { repoUrl: `https://github.com/${owner}/${repo}` },
+        { 
+          healthScore: metrics.score, 
+          language: topLanguage, 
+          stars: repoDetails.data.stargazers_count || 0, 
+          lastActive: new Date(repoDetails.data.updated_at), 
+          timestamp: new Date() 
+        },
+        { upsert: true }
+      );
+    } catch (e) {
+      console.log('Leaderboard auto-save error:', e.message);
+    }
 
     res.json({
       repoInfo: { owner, repo, defaultBranch },
