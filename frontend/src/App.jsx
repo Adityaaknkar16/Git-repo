@@ -35,13 +35,9 @@ import NightOwlEarlyBird from './components/NightOwlEarlyBird.jsx';
 import RepoReportCard from './components/RepoReportCard.jsx';
 import GithubWrapped from './components/GithubWrapped.jsx';
 import Leaderboard from './components/Leaderboard.jsx';
-import GitignoreGenerator from './components/GitignoreGenerator.jsx';
 import PrChecklist from './components/PrChecklist.jsx';
-import StaleBranchCleaner from './components/StaleBranchCleaner.jsx';
 import VulnerabilityScanner from './components/VulnerabilityScanner.jsx';
 import StreakTracker from './components/StreakTracker.jsx';
-import PersonalityQuiz from './components/PersonalityQuiz.jsx';
-import RoastMyRepo from './components/RoastMyRepo.jsx';
 import OrgDashboard from './components/OrgDashboard.jsx';
 import WeeklyDigest from './components/WeeklyDigest.jsx';
 import TeamVelocity from './components/TeamVelocity.jsx';
@@ -205,13 +201,9 @@ export default function App() {
     { id: 'report-card', name: 'PDF Report Card', icon: <FileText size={16} /> },
     { id: 'wrapped', name: 'Wrapped 2024', icon: <Award size={16} /> },
     { id: 'leaderboard', name: 'Leaderboard', icon: <Trophy size={16} /> },
-    { id: 'gitignore', name: 'gitignore Generator', icon: <Settings size={16} /> },
     { id: 'pr-checklist', name: 'PR Checklist', icon: <Layers size={16} /> },
-    { id: 'stale-branches', name: 'Stale Branches', icon: <GitCompare size={16} /> },
     { id: 'vulnerabilities', name: 'Vulnerabilities', icon: <ShieldAlert size={16} /> },
     { id: 'streaks', name: 'Commit Streaks', icon: <Flame size={16} /> },
-    { id: 'quiz', name: 'Personality Quiz', icon: <Cpu size={16} /> },
-    { id: 'roast', name: 'Roast My Repo', icon: <Flame size={16} /> },
     { id: 'org', name: 'Org Dashboard', icon: <Building size={16} /> },
     { id: 'velocity', name: 'Team Velocity', icon: <BarChart2 size={16} /> },
     { id: 'onboarding', name: 'Onboarding Guide', icon: <FileText size={16} /> },
@@ -473,22 +465,9 @@ export default function App() {
                 <Leaderboard />
               </div>
             )}
-
-            {activeTab === 'gitignore' && (
-              <div className="grid-single">
-                <GitignoreGenerator owner={owner} repo={repo} />
-              </div>
-            )}
-
             {activeTab === 'pr-checklist' && (
               <div className="grid-single">
                 <PrChecklist owner={owner} repo={repo} />
-              </div>
-            )}
-
-            {activeTab === 'stale-branches' && (
-              <div className="grid-single">
-                <StaleBranchCleaner owner={owner} repo={repo} />
               </div>
             )}
 
@@ -504,17 +483,7 @@ export default function App() {
               </div>
             )}
 
-            {activeTab === 'quiz' && (
-              <div className="grid-single">
-                <PersonalityQuiz repoInfo={data.repoInfo} stats={data} />
-              </div>
-            )}
 
-            {activeTab === 'roast' && (
-              <div className="grid-single">
-                <RoastMyRepo owner={owner} repo={repo} />
-              </div>
-            )}
 
             {activeTab === 'org' && (
               <div className="grid-single">

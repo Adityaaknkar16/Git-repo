@@ -36,49 +36,6 @@ async function setCache(repoUrl, type, data) {
   } catch (e) {}
 }
 
-// [8] .GITIGNORE GENERATOR
-router.get('/gitignore/:owner/:repo', async (req, res) => {
-  const { owner, repo } = req.params;
-  const repoUrl = `https://github.com/${owner}/${repo}`;
-  const cacheKey = 'gitignore';
-
-  try {
-    const cachedData = await checkCache(repoUrl, cacheKey);
-    if (cachedData) return res.json(cachedData);
-
-    let detectedStacks = ['node', 'visualstudioosx', 'windows'];
-    
-    if (!getMockFallback(owner, repo)) {
-      try {
-        const langRes = await octokit.repos.listLanguages({ owner, repo }).catch(() => ({ data: {} }));
-        const languages = Object.keys(langRes.data);
-        if (languages.includes('JavaScript') || languages.includes('TypeScript')) {
-          detectedStacks.push('node');
-        }
-        if (languages.includes('Python')) detectedStacks.push('python');
-        if (languages.includes('Go')) detectedStacks.push('go');
-        if (languages.includes('Java')) detectedStacks.push('maven');
-      } catch (e) {}
-    }
-
-    const uniqueStacks = Array.from(new Set(detectedStacks));
-    let gitignoreText = '';
-    try {
-      const gitignoreIoUrl = `https://www.toptal.com/developers/gitignore/api/${uniqueStacks.join(',')}`;
-      const gitignoreRes = await axios.get(gitignoreIoUrl);
-      gitignoreText = gitignoreRes.data;
-    } catch (e) {
-      gitignoreText = `# Default gitignore for Node\nnode_modules/\n.env\ndist/\n.DS_Store\n`;
-    }
-
-    const result = { gitignoreText, stacks: uniqueStacks };
-    await setCache(repoUrl, cacheKey, result);
-    res.json(result);
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to generate gitignore.' });
-  }
-});
-
 // [9] PR REVIEW CHECKLIST GENERATOR
 router.get('/pr-checklist/:owner/:repo', async (req, res) => {
   const { owner, repo } = req.params;
@@ -138,53 +95,6 @@ router.get('/pr-checklist/:owner/:repo', async (req, res) => {
     res.json({ checklist: items, language: mainLanguage });
   } catch (error) {
     res.status(500).json({ error: 'Failed to generate PR checklist.' });
-  }
-});
-
-// [10] STALE BRANCH CLEANER SCRIPT
-router.get('/stale-branches/:owner/:repo', async (req, res) => {
-  const { owner, repo } = req.params;
-  const daysThreshold = parseInt(req.query.days) || 30;
-
-  try {
-    let staleBranches = [];
-
-    if (getMockFallback(owner, repo)) {
-      // Return high-quality mock branches
-      staleBranches = [
-        { name: 'feature/old-analytics-layout', lastCommit: '2026-02-15T12:00:00Z', author: 'AlexCoder', daysSinceActivity: 120 },
-        { name: 'bugfix/issue-99-crash', lastCommit: '2026-04-10T15:30:00Z', author: 'SarahDev', daysSinceActivity: 69 },
-        { name: 'chore/cleanup-deprecations', lastCommit: '2026-05-18T09:15:00Z', author: 'EmmaBuilds', daysSinceActivity: 31 }
-      ].filter(b => b.daysSinceActivity > daysThreshold);
-    } else {
-      // Live Fetch
-      const branchesRes = await octokit.repos.listBranches({ owner, repo }).catch(() => ({ data: [] }));
-      const now = new Date();
-
-      const branchDetails = await Promise.all(
-        branchesRes.data.map(async branch => {
-          if (branch.name === 'main' || branch.name === 'master' || branch.name === 'dev') return null;
-          const commitRes = await octokit.repos.getCommit({ owner, repo, ref: branch.commit.sha }).catch(() => null);
-          if (!commitRes) return null;
-
-          const lastCommitDate = new Date(commitRes.data.commit.author.date);
-          const diffDays = Math.floor((now - lastCommitDate) / (1000 * 60 * 60 * 24));
-
-          return {
-            name: branch.name,
-            lastCommit: commitRes.data.commit.author.date,
-            author: commitRes.data.commit.author.name,
-            daysSinceActivity: diffDays
-          };
-        })
-      );
-
-      staleBranches = branchDetails.filter(b => b && b.daysSinceActivity > daysThreshold);
-    }
-
-    res.json({ staleBranches });
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to retrieve stale branches.' });
   }
 });
 
