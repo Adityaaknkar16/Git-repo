@@ -1,3 +1,8 @@
+/**
+ * TeamVelocity Component
+ * Displays sprint-over-sprint progression of completed tasks, PR approvals,
+ * and total commit counts across the team.
+ */
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
