@@ -1,3 +1,8 @@
+/**
+ * CodeChurn Component
+ * Visualizes the amount of code added, deleted, and modified over time.
+ * Helps identify high-activity hotspots and unstable files.
+ */
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { ResponsiveContainer, Treemap } from 'recharts';
