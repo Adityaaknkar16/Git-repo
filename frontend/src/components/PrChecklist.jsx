@@ -1,3 +1,8 @@
+/**
+ * PrChecklist Component
+ * Generates smart pull request check items dynamically based on file changes
+ * and commit history patterns to reduce human review error.
+ */
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Download, CheckSquare, Square, FileText } from 'lucide-react';
