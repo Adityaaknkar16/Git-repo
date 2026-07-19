@@ -1,3 +1,8 @@
+/**
+ * CollaborationMap Component
+ * Renders a network connection map of files and authors to show code co-ownership
+ * and collaboration density.
+ */
 import React from 'react';
 import { Users, Shield, MessageSquare, ArrowRight } from 'lucide-react';
 
