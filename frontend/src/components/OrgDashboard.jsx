@@ -1,3 +1,8 @@
+/**
+ * OrgDashboard Component
+ * Consolidates analytics, repositories list, and overall velocity metrics
+ * at the GitHub organization level.
+ */
 import React, { useState } from 'react';
 import axios from 'axios';
 import { Search, Download, Building, ExternalLink } from 'lucide-react';
