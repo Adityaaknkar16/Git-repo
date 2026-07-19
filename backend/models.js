@@ -57,10 +57,20 @@ const Subscription = mongoose.model('Subscription', SubscriptionSchema);
 const AnalysisCache = mongoose.model('AnalysisCache', AnalysisCacheSchema);
 const User = mongoose.model('User', UserSchema);
 
+// 5. AiInsightsCache Schema (24 hours TTL)
+const AiInsightsCacheSchema = new mongoose.Schema({
+  repoUrl: { type: String, required: true, unique: true },
+  data: { type: Object, required: true },
+  cachedAt: { type: Date, default: Date.now, index: { expires: 86400 } } // 86400 seconds = 24 hours
+});
+
+const AiInsightsCache = mongoose.model('AiInsightsCache', AiInsightsCacheSchema);
+
 module.exports = {
   connectDB,
   Leaderboard,
   Subscription,
   AnalysisCache,
-  User
+  User,
+  AiInsightsCache
 };

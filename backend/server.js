@@ -9,7 +9,8 @@ const session = require('express-session');
 const passport = require('passport');
 const cron = require('node-cron');
 const nodemailer = require('nodemailer');
-const { connectDB, Subscription } = require('./models');
+const { connectDB, Subscription, AiInsightsCache } = require('./models');
+const { GoogleGenerativeAI } = require('@google/generative-ai');
 
 const app = express();
 const PORT = process.env.PORT || 5001;
@@ -799,21 +800,17 @@ app.post('/api/branch-compare', async (req, res) => {
 });
 
 // --- API Endpoint: AI Insights ---
-app.post('/api/ai-insights', async (req, res) => {
-  try {
-    const { repoUrl, languages, contributors, commitHistory } = req.body;
-    const urlParts = repoUrl.split('/');
-    const owner = urlParts[urlParts.length - 2];
-    const repo = urlParts[urlParts.length - 1];
+const runMockFallback = (repoUrl, languages, contributors, commitHistory) => {
+  const urlParts = repoUrl ? repoUrl.split('/') : ['unknown', 'repo'];
+  const owner = urlParts[urlParts.length - 2] || 'owner';
+  const repo = urlParts[urlParts.length - 1] || 'repo';
+  const topLanguage = Object.keys(languages || {}).shift() || 'Unknown';
+  const totalCommits = commitHistory ? commitHistory.length : 150;
+  const authorCount = contributors ? contributors.length : 3;
 
-    // Build intelligent analytics summary using inputs
-    const topLanguage = Object.keys(languages || {}).shift() || 'Unknown';
-    const totalCommits = commitHistory ? commitHistory.length : 150;
-    const authorCount = contributors ? contributors.length : 3;
-
-    const summary = `Repository "${owner}/${repo}" is primarily built with **${topLanguage}**. Across the analyzed commits (${totalCommits} total), we observed high-velocity updates led by **${authorCount} main authors**. Code modification ratios skew towards active feature development.`;
-
-    const hotspots = [
+  return {
+    summary: `Repository "${owner}/${repo}" is primarily built with **${topLanguage}**. Across the analyzed commits (${totalCommits} total), we observed high-velocity updates led by **${authorCount} main authors**. Code modification ratios skew towards active feature development. (Fallback Mock)`,
+    hotspots: [
       {
         path: 'src/components/Dashboard.tsx',
         score: 'High Risk',
@@ -829,21 +826,127 @@ app.post('/api/ai-insights', async (req, res) => {
         score: 'Low Risk',
         reason: 'Frequent dependencies updates. Ensure to run audit tests before merging.',
       }
-    ];
-
-    const refactoringTips = [
+    ],
+    refactoringTips: [
       'Refactor state management in visualization boards to reduce re-renders.',
       'Add unit testing suites for commit graph rendering logic to prevent edge cases with orphan merges.',
       'Standardize CSS custom properties across charts to maintain cohesive dark-theme palettes.',
-    ];
+    ]
+  };
+};
 
-    res.json({
-      summary,
-      hotspots,
-      refactoringTips,
+app.post('/api/ai-insights', async (req, res) => {
+  const { repoUrl, languages, contributors, commitHistory, readmeContent } = req.body;
+
+  if (!repoUrl) {
+    return res.status(400).json({ msg: 'Repository URL is required.' });
+  }
+
+  try {
+    // 1. Caching Check: Look up cached insights (expires in 24 hours via MongoDB TTL index)
+    const cachedInsights = await AiInsightsCache.findOne({ repoUrl });
+    if (cachedInsights) {
+      console.log(`[Cache Hit] Returning cached AI insights for: ${repoUrl}`);
+      return res.json(cachedInsights.data);
+    }
+
+    // 2. Gemini API setup
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey || apiKey === 'your_gemini_api_key_here') {
+      console.warn('GEMINI_API_KEY is not configured. Falling back to mock logic.');
+      const fallback = runMockFallback(repoUrl, languages, contributors, commitHistory);
+      return res.json(fallback);
+    }
+
+    const genAI = new GoogleGenerativeAI(apiKey);
+    const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
+
+    // 3. Construct the prompt
+    const topLanguage = Object.keys(languages || {}).shift() || 'Unknown';
+    const recentCommits = commitHistory
+      ? commitHistory.slice(0, 20).map(c => c.message || c.commit?.message || '').filter(Boolean)
+      : [];
+    
+    const prompt = `You are a Senior Principal Software Architect and codebase health auditor.
+Analyze the following Git repository properties:
+- URL: ${repoUrl}
+- Primary Language: ${topLanguage}
+- Language breakdown: ${JSON.stringify(languages || {})}
+- Number of active contributors: ${contributors ? contributors.length : 'Unknown'}
+- Recent commits history: ${JSON.stringify(recentCommits)}
+${readmeContent ? `- README content excerpt: ${readmeContent.substring(0, 1500)}` : ''}
+
+Provide your response in strict JSON matching this exact structure:
+{
+  "summary": "string - A concise 2-3 sentences natural-language health and quality summary of the repository",
+  "suggestions": ["string - 3-5 specific, actionable code quality, architecture, or refactoring suggestions"],
+  "hotspots": ["string - 3-5 notable 'hotspot' files/patterns formatted exactly as 'filepath | Risk Level (High Risk/Medium Risk/Low Risk) | Detailed reason description'"]
+}
+
+Rules:
+- Respond in strict, parseable JSON only.
+- Do NOT wrap in markdown code blocks or use \`\`\`json.
+- Do NOT provide conversational preamble.`;
+
+    // 4. API Call with 15s timeout
+    const apiCallPromise = model.generateContent({
+      contents: [{ role: 'user', parts: [{ text: prompt }] }],
+      generationConfig: {
+        responseMimeType: 'application/json',
+      },
     });
+
+    const timeoutPromise = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error('TIMEOUT')), 15000)
+    );
+
+    const result = await Promise.race([apiCallPromise, timeoutPromise]);
+    const responseText = result.response.text();
+    const parsedData = JSON.parse(responseText);
+
+    // 5. Transform structure back to what frontend expects
+    const hotspotsFormatted = (parsedData.hotspots || []).map(h => {
+      if (typeof h === 'string') {
+        const parts = h.split('|');
+        return {
+          path: parts[0]?.trim() || 'Unknown File',
+          score: parts[1]?.trim() || 'Medium Risk',
+          reason: parts[2]?.trim() || 'Identified by Gemini AI analysis.'
+        };
+      } else if (h && typeof h === 'object') {
+        return {
+          path: h.path || 'Unknown File',
+          score: h.score || 'Medium Risk',
+          reason: h.reason || 'Identified by Gemini AI analysis.'
+        };
+      }
+      return h;
+    });
+
+    const finalResponseData = {
+      summary: parsedData.summary || 'Analysis complete.',
+      hotspots: hotspotsFormatted,
+      refactoringTips: parsedData.suggestions || parsedData.refactoringTips || []
+    };
+
+    // 6. Cache the successful result in MongoDB (cache duration 24 hours handled automatically by TTL)
+    await AiInsightsCache.findOneAndUpdate(
+      { repoUrl },
+      { data: finalResponseData, cachedAt: new Date() },
+      { upsert: true, new: true }
+    );
+
+    return res.json(finalResponseData);
   } catch (error) {
-    res.status(500).json({ msg: 'Failed to generate AI insights.' });
+    if (error.message === 'TIMEOUT') {
+      console.warn('Gemini API call timed out after 15s. Using fallback.');
+    } else if (error.status === 429 || (error.message && error.message.includes('429'))) {
+      console.warn('Gemini free tier rate limit hit, using fallback.');
+    } else {
+      console.error('Failed to generate AI insights via Gemini, using fallback. Error details:', error);
+    }
+    const fallback = runMockFallback(repoUrl, languages, contributors, commitHistory);
+    return res.json(fallback);
   }
 });
 
