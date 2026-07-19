@@ -1,3 +1,8 @@
+/**
+ * StreakTracker Component
+ * Monitors consecutive active days of commits to drive developer motivation
+ * through clean gamified visual streak badges.
+ */
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Award, Zap, Trophy, Flame } from 'lucide-react';
