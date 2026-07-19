@@ -1,3 +1,8 @@
+/**
+ * GithubWrapped Component
+ * Generates a yearly summary showcase of developer contributions, top languages,
+ * and coding streaks, inspired by Spotify Wrapped.
+ */
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Play, Pause, ChevronRight, Share2, Check } from 'lucide-react';
