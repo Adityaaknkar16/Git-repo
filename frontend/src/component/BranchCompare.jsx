@@ -1,3 +1,8 @@
+/**
+ * BranchCompare Component
+ * Highlights diff volumes, commit histories, and potential merge conflicts between
+ * base and head branches.
+ */
 import React, { useState } from 'react';
 import axios from 'axios';
 import { GitCompare, AlertTriangle, CheckCircle } from 'lucide-react';
