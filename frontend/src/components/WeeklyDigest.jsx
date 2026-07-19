@@ -1,3 +1,8 @@
+/**
+ * WeeklyDigest Component
+ * Provides email newsletter opt-in forms and updates frequency options
+ * for automated repository health summary digests.
+ */
 import React, { useState } from 'react';
 import axios from 'axios';
 import { Mail, Check, AlertCircle } from 'lucide-react';
