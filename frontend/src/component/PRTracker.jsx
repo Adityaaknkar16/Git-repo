@@ -1,3 +1,7 @@
+/**
+ * PRTracker Component
+ * Traces pull request lifecycle milestones from draft creation to merge or decline status.
+ */
 import React from 'react';
 import { GitPullRequest, CheckCircle2, GitMerge, XOctagon } from 'lucide-react';
 
