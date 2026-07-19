@@ -1,3 +1,7 @@
+/**
+ * ContributorHeatmap Component
+ * Calendar heatmap visualizing contribution volumes over 365 days.
+ */
 import React from 'react';
 import { PlusCircle, MinusCircle, GitCommit } from 'lucide-react';
 
