@@ -1,3 +1,8 @@
+/**
+ * HealthScore Component
+ * Aggregates all analysis indices into a single representative repository health grade
+ * and exposes the dynamic markdown badge exporter.
+ */
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Award, Shield, CheckCircle, Clock, Users, Calendar, Copy, Check } from 'lucide-react';
