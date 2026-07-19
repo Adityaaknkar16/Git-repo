@@ -1,3 +1,8 @@
+/**
+ * UserDashboard Component
+ * The main profile hub displaying OAuth state, connected repositories,
+ * personal analysis logs, and subscription alerts.
+ */
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Folder, Calendar, AlertCircle, Trash2 } from 'lucide-react';
