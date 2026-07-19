@@ -1,3 +1,8 @@
+/**
+ * Leaderboard Component
+ * Renders the relative ranking of analyzed repositories based on health score,
+ * stars, activity levels, and custom gamification points.
+ */
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Trophy, RefreshCw, Star, Layers, ExternalLink } from 'lucide-react';
