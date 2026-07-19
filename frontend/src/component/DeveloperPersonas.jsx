@@ -1,3 +1,8 @@
+/**
+ * DeveloperPersonas Component
+ * Leverages contribution traits (docs, bugfixes, tests, UI) to classify authors
+ * into descriptive archetypes.
+ */
 import React from 'react';
 import { Share2 } from 'lucide-react';
 
