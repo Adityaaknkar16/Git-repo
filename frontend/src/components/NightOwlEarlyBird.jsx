@@ -1,3 +1,8 @@
+/**
+ * NightOwlEarlyBird Component
+ * Visualizes commit frequencies by hour of the day to identify active coding hours.
+ * Classifies team members into timezone-adjusted productivity profiles.
+ */
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, Tooltip } from 'recharts';
