@@ -1,3 +1,8 @@
+/**
+ * BattleMode Component
+ * Interactive comparison screen allowing side-by-side pitting of two different
+ * repositories against each other across core health indices.
+ */
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { ShieldAlert, Trophy, Share2, Copy, Check } from 'lucide-react';
