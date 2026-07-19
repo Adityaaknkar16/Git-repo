@@ -1,3 +1,8 @@
+/**
+ * CodeQualityMetrics Component
+ * Displays aggregations of complexity, code comments ratio, duplication rates,
+ * and lint rules compliance.
+ */
 import React from 'react';
 import { Doughnut, Line } from 'react-chartjs-2';
 import { Chart as ChartJS, ArcElement, LineElement, PointElement, LinearScale, CategoryScale, Tooltip, Legend } from 'chart.js';
