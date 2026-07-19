@@ -1,3 +1,8 @@
+/**
+ * BusFactor Component
+ * Analyzes commit distribution among authors to evaluate codebase knowledge centralization
+ * and single-point-of-failure risks.
+ */
 import React from 'react';
 import { ShieldAlert, Info, AlertTriangle } from 'lucide-react';
 
