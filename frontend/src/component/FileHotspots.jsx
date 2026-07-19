@@ -1,3 +1,8 @@
+/**
+ * FileHotspots Component
+ * Displays scatter plots mapping code complexity against modification frequency
+ * to highlight refactoring priorities.
+ */
 import React, { useState } from 'react';
 import { Flame, FileText, BarChart } from 'lucide-react';
 
