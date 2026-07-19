@@ -1,3 +1,8 @@
+/**
+ * AIInsights Panel
+ * Requests and displays advanced LLM-powered refactoring suggestions, security hotspots,
+ * and general repository health overviews.
+ */
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Cpu, Terminal, RefreshCw, MessageSquare } from 'lucide-react';
