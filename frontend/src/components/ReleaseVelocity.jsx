@@ -1,3 +1,7 @@
+/**
+ * ReleaseVelocity Component
+ * Computes and plots the frequency, cycle times, and deployment rate of production releases.
+ */
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
