@@ -1,3 +1,7 @@
+/**
+ * CommitGraph Component
+ * Renders a beautiful visual branch/merge history tree similar to git log DAG graphs.
+ */
 import React, { useEffect, useRef, useState } from 'react';
 import * as d3 from 'd3';
 import { Search, Filter, RefreshCw } from 'lucide-react';
