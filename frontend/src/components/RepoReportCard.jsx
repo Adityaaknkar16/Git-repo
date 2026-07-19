@@ -1,3 +1,8 @@
+/**
+ * RepoReportCard Component
+ * Renders a shareable, high-fidelity report card detailing grade level,
+ * maintenance indexes, and performance metrics for the repository.
+ */
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import html2canvas from 'html2canvas';
