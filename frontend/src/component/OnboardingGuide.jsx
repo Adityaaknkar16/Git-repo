@@ -1,3 +1,7 @@
+/**
+ * OnboardingGuide Component
+ * Generates custom files layout walk-throughs for new contributors onboarding to the repo.
+ */
 import React, { useState } from 'react';
 import { Sparkles, Copy, Check, FileDown, BookOpen } from 'lucide-react';
 
