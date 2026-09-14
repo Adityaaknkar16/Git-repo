@@ -1,6 +1,5 @@
 const express = require('express');
 const { Octokit } = require('@octokit/rest');
-const axios = require('axios');
 const { AnalysisCache } = require('../models');
 
 const router = express.Router();
