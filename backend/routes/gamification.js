@@ -73,8 +73,8 @@ router.get('/streaks/:owner/:repo', async (req, res) => {
       ]);
 
       commitData = commitsRes.data.map(c => ({
-        author: c.author ? c.author.login : c.commit.author.name,
-        date: c.commit.author.date
+        author: c.author ? c.author.login : (c.commit?.author?.name || c.commit?.committer?.name || 'Developer'),
+        date: c.commit?.author?.date || c.commit?.committer?.date || new Date().toISOString()
       }));
 
       contributors = contribRes.data.map(c => ({

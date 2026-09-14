@@ -1,66 +1,89 @@
-# Deployment Guide
+# Deployment & Secrets Configuration Guide
 
-This guide outlines how to deploy the **Git Repository Visualizer** project. The project is split into a Node.js Express backend and a React/Vite frontend.
+This guide outlines how to deploy the **Git Repository Visualizer** project smoothly and securely.
 
-- **Backend** will be deployed on **Render**
-- **Frontend** will be deployed on **Vercel**
+- **Backend (Node.js API)** &rarr; Deployed on **Render** (or Railway / Fly.io)
+- **Frontend (React / Vite SPA)** &rarr; Deployed on **Vercel**
 
 ---
 
 ## 1. Backend Deployment on Render
 
-Render will host the Node.js API server located in the `backend/` directory.
+Render hosts the Express API server located in the `backend/` directory.
 
-### Setup Steps:
-1. Go to the [Render Dashboard](https://dashboard.render.com/) and click **New > Web Service**.
+### Step-by-Step Setup:
+1. Go to the [Render Dashboard](https://dashboard.render.com/) and click **New + > Web Service**.
 2. Connect your Git repository.
 3. Configure the following fields:
-   - **Name**: `git-repo-visualizer-backend` (or your preferred name)
-   - **Environment**: `Node`
+   - **Name**: `git-repo-visualizer-api` (or your choice)
+   - **Region**: Closest to your users (e.g. `Frankfurt`, `Oregon`, `Singapore`)
+   - **Branch**: `main` (or your production branch)
    - **Root Directory**: `backend`
+   - **Runtime**: `Node`
    - **Build Command**: `npm install`
    - **Start Command**: `npm start`
-4. Expand the **Advanced** section to add **Environment Variables** (Secrets).
+   - **Health Check Path**: `/health` (or `/`)
+4. Expand the **Environment Variables** section and add the required configuration keys.
 
 ### Environment Variables on Render:
 
-| Key | Value / Description | Example |
-| :--- | :--- | :--- |
-| `PORT` | `5001` or let Render assign automatically | `5001` |
-| `GITHUB_TOKEN` | Your GitHub Personal Access Token (for live data queries). Leave blank to use Demo Mode. | `ghp_yourTokenHere` |
-| `JWT_SECRET` | A secure random string for signing JWT tokens | `super_secret_jwt_key` |
-| `SESSION_SECRET` | A secure random string for sessions | `super_secret_session_key` |
-| `FRONTEND_URL` | The URL of your Vercel frontend | `https://your-app-name.vercel.app` |
-| `BACKEND_URL` | The URL of this Render web service (needed for GitHub OAuth callbacks) | `https://your-backend-name.onrender.com` |
-| `MONGODB_URI` | *(Optional)* If your application saves persistent user data to a database. | `mongodb+srv://...` |
+| Key | Required | Value / Description | Placeholder Example |
+| :--- | :---: | :--- | :--- |
+| `PORT` | Auto | Port assigned by Render or fallback | `5001` |
+| `NODE_ENV` | Optional | Environment mode | `production` |
+| `GITHUB_TOKEN` | Optional | GitHub Personal Access Token (for live queries). Leave blank to use Demo Mode. | `<YOUR_GITHUB_PERSONAL_ACCESS_TOKEN>` |
+| `GEMINI_API_KEY` | Optional | Google Gemini API key for AI Code Analyzer | `<YOUR_GEMINI_API_KEY>` |
+| `JWT_SECRET` | Recommended | Secure random string for JWT token signing | `<YOUR_JWT_SECRET_STRING>` |
+| `SESSION_SECRET` | Recommended | Secure random string for session encryption | `<YOUR_SESSION_SECRET_STRING>` |
+| `FRONTEND_URL` | Recommended | The production URL of your Vercel frontend | `https://<YOUR_APP_NAME>.vercel.app` |
+| `BACKEND_URL` | Optional | The URL of this Render web service (for OAuth redirects) | `https://<YOUR_API_NAME>.onrender.com` |
+| `MONGODB_URI` | Optional | MongoDB connection string (leave blank for stateless demo mode) | `mongodb+srv://<USER>:<PASSWORD>@cluster.mongodb.net/<DB_NAME>` |
+
+> [!TIP]
+> **Render Free Tier Note**: Free Render instances sleep after 15 minutes of inactivity. When a request arrives, it may take 30-50 seconds to wake up (cold start). The frontend handles loading spinners gracefully while waiting for the response.
 
 ---
 
 ## 2. Frontend Deployment on Vercel
 
-Vercel will host the React/Vite application located in the `frontend/` directory.
+Vercel hosts the high-performance Vite React SPA located in the `frontend/` directory.
 
-### Setup Steps:
+### Step-by-Step Setup:
 1. Go to the [Vercel Dashboard](https://vercel.com/) and click **Add New > Project**.
-2. Import your Git repository.
-3. In the project configuration:
+2. Select and import your GitHub repository.
+3. In the project setup wizard:
    - **Framework Preset**: `Vite`
    - **Root Directory**: Click *Edit* and select **`frontend`**.
-   - **Build and Output Settings**: Keep defaults (Build Command: `npm run build`, Output Directory: `dist`).
+   - **Build and Output Settings**: Defaults (`Build Command: npm run build`, `Output Directory: dist`).
    - **Install Command**: `npm install`
-4. Expand the **Environment Variables** section.
+4. Expand **Environment Variables** and add:
 
-### Environment Variables on Vercel:
+| Key | Value / Description | Placeholder Example |
+| :--- | :--- | :--- |
+| `VITE_BACKEND_URL` | The public HTTPS URL of your Render backend | `https://<YOUR_API_NAME>.onrender.com` |
 
-| Key | Value / Description |
-| :--- | :--- |
-| `VITE_BACKEND_URL` | The URL of your deployed Render backend (e.g. `https://your-backend-name.onrender.com`) |
+5. Click **Deploy**. Vercel will build the SPA and deploy it with global CDN caching.
 
 ---
 
-## 3. Security Check: Keeping Secrets Hidden
+## 3. Security & Secrets Protection
 
-All environment variables and secrets are handled securely and kept out of version control:
-- Local `.env` files are ignored in both [backend/.gitignore](file:///e:/projectss/Git%20repo%20visualizer/backend/.gitignore) and [frontend/.gitignore](file:///e:/projectss/Git%20repo%20visualizer/frontend/.gitignore).
-- No production credentials or GitHub tokens are committed to git.
-- When running locally, configure variables in a local `.env` file within the `backend/` or `frontend/` folders.
+All environment variables and credentials are kept strictly out of git version control:
+- Local `.env` files are ignored in [.gitignore](file:///e:/projectss/Git%20repo%20visualizer/.gitignore), [backend/.gitignore](file:///e:/projectss/Git%20repo%20visualizer/backend/.gitignore), and [frontend/.gitignore](file:///e:/projectss/Git%20repo%20visualizer/frontend/.gitignore).
+- Template variable examples are documented in [backend/.env.example](file:///e:/projectss/Git%20repo%20visualizer/backend/.env.example) and [frontend/.env.example](file:///e:/projectss/Git%20repo%20visualizer/frontend/.env.example).
+- Secrets should only ever be set in the platform environment variable dashboards (Render Dashboard / Vercel Dashboard).
+
+### What if a token was previously committed or exposed?
+If a token was ever exposed:
+1. Go to GitHub -> **Settings** -> **Developer Settings** -> **Personal Access Tokens**.
+2. Click on the token and select **Revoke** / **Delete**.
+3. Generate a new token with appropriate scopes (`repo`, `read:user`) and paste it directly into Render's Environment Variables settings.
+
+---
+
+## 4. Health Checks & Verification
+
+- **Backend Health Check**: Open `https://<YOUR_API_NAME>.onrender.com/health` in your browser. It should return `{ "status": "ok", "uptime": ... }`.
+- **Backend Root Status**: Open `https://<YOUR_API_NAME>.onrender.com/` in your browser. It should return `{ "name": "Git Repo Visualizer API", "status": "online", ... }`.
+- **Frontend SPA**: Open `https://<YOUR_APP_NAME>.vercel.app`. Test the **"Load Demo Data"** button or enter any public GitHub repository URL.
+

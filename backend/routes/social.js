@@ -122,13 +122,18 @@ router.get('/wrapped/:owner/:repo', async (req, res) => {
       const words = {};
 
       commitsRes.data.forEach(c => {
-        const date = new Date(c.commit.author.date);
-        monthCounts[date.getMonth()]++;
+        const dateStr = c.commit?.author?.date || c.commit?.committer?.date;
+        if (dateStr) {
+          const date = new Date(dateStr);
+          if (!isNaN(date.getTime())) {
+            monthCounts[date.getMonth()]++;
+          }
+        }
         
-        const author = c.author ? c.author.login : c.commit.author.name;
+        const author = c.author ? c.author.login : (c.commit?.author?.name || c.commit?.committer?.name || 'Developer');
         if (author) authors[author] = (authors[author] || 0) + 1;
 
-        const msgWords = c.commit.message.toLowerCase().split(/\s+/);
+        const msgWords = (c.commit?.message || '').toLowerCase().split(/\s+/);
         msgWords.forEach(w => {
           if (w.length > 3 && !['with', 'this', 'that', 'from', 'your', 'have'].includes(w)) {
             words[w] = (words[w] || 0) + 1;

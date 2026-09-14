@@ -15,6 +15,9 @@ const { GoogleGenerativeAI } = require('@google/generative-ai');
 const app = express();
 const PORT = process.env.PORT || 5001;
 
+// Trust proxy for Render/Vercel reverse proxies
+app.set('trust proxy', 1);
+
 // Connect to MongoDB
 connectDB();
 
@@ -31,13 +34,45 @@ const getMockFallback = (owner, repo) => {
   return !hasToken || owner === 'demo' || repo === 'demo';
 };
 
-app.use(cors());
+// Enable CORS for Vercel, localhost, and custom domains
+app.use(cors({
+  origin: (origin, callback) => {
+    // Allow requests with no origin (like mobile apps, curl, server-to-server)
+    if (!origin) return callback(null, true);
+    // Allow localhost and vercel app domains
+    if (origin.includes('localhost') || origin.includes('127.0.0.1') || origin.includes('.vercel.app')) {
+      return callback(null, true);
+    }
+    const frontendUrl = process.env.FRONTEND_URL;
+    if (frontendUrl && origin.startsWith(frontendUrl.replace(/\/$/, ''))) {
+      return callback(null, true);
+    }
+    return callback(null, true); // Permissive CORS for public visualizer API
+  },
+  credentials: true
+}));
 app.use(express.json());
+
+// Service Health Checks for Render / Uptime monitors
+app.get('/', (req, res) => {
+  res.json({
+    name: 'Git Repo Visualizer API',
+    status: 'online',
+    version: '1.0.0',
+    mode: hasToken ? 'live-github-auth' : 'high-fidelity-demo'
+  });
+});
+
+app.get('/health', (req, res) => {
+  res.status(200).json({ status: 'ok', uptime: Math.floor(process.uptime()) });
+});
 
 // Rate Limiting
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 200, // Limit each IP to 200 requests per window
+  max: 300, // Limit each IP to 300 requests per window
+  standardHeaders: true,
+  legacyHeaders: false,
   message: { error: 'Too many requests from this IP, please try again after 15 minutes.' }
 });
 app.use('/api/', limiter);
@@ -161,8 +196,9 @@ async function computeHealthMetrics(owner, repo) {
 
     const lastCommitRes = await octokit.repos.listCommits({ owner, repo, per_page: 1 }).catch(() => ({ data: [] }));
     if (lastCommitRes.data.length > 0) {
-      const lastCommitDate = new Date(lastCommitRes.data[0].commit.author.date);
-      recencyDays = Math.floor((Date.now() - lastCommitDate) / (1000 * 60 * 60 * 24));
+      const commitDateStr = lastCommitRes.data[0].commit?.author?.date || lastCommitRes.data[0].commit?.committer?.date;
+      const lastCommitDate = commitDateStr ? new Date(commitDateStr) : new Date();
+      recencyDays = Math.floor((Date.now() - lastCommitDate.getTime()) / (1000 * 60 * 60 * 24));
     } else {
       recencyDays = 30;
     }
@@ -617,15 +653,20 @@ app.post('/api/analyze-repo', async (req, res) => {
     const languages = languageResponse.data;
     const fileTree = treeResponse.data.tree;
 
-    const commitHistory = commitResponse.data.map(c => ({
-      sha: c.sha.substring(0, 7),
-      fullSha: c.sha,
-      author: c.commit.author.name,
-      authorLogin: c.author ? c.author.login : c.commit.author.name,
-      date: c.commit.author.date,
-      message: c.commit.message,
-      parents: c.parents.map(p => p.sha.substring(0, 7)),
-    }));
+    const commitHistory = commitResponse.data.map(c => {
+      const authorName = c.commit?.author?.name || c.commit?.committer?.name || 'Developer';
+      const authorLogin = c.author?.login || authorName;
+      const dateStr = c.commit?.author?.date || c.commit?.committer?.date || new Date().toISOString();
+      return {
+        sha: c.sha ? c.sha.substring(0, 7) : '0000000',
+        fullSha: c.sha || '',
+        author: authorName,
+        authorLogin: authorLogin,
+        date: dateStr,
+        message: c.commit?.message || '',
+        parents: (c.parents || []).map(p => p.sha ? p.sha.substring(0, 7) : ''),
+      };
+    });
 
     const contributors = contributorResponse.data.map(c => ({
       login: c.login,

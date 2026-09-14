@@ -2,12 +2,18 @@ const mongoose = require('mongoose');
 
 // Connect to MongoDB helper function
 const connectDB = async () => {
-  const uri = process.env.MONGODB_URI || 'mongodb://localhost:27017/git-analyzer';
+  const uri = process.env.MONGODB_URI;
+  if (!uri) {
+    console.log('Notice: MONGODB_URI is not set. Running in stateless / in-memory demo mode.');
+    return;
+  }
   try {
-    await mongoose.connect(uri);
+    await mongoose.connect(uri, {
+      serverSelectionTimeoutMS: 5000,
+    });
     console.log('MongoDB connected successfully.');
   } catch (error) {
-    console.error('MongoDB connection error:', error.message);
+    console.warn('MongoDB connection warning:', error.message, '(Running in demo fallback mode)');
   }
 };
 

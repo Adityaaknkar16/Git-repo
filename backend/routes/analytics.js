@@ -84,10 +84,11 @@ router.get('/sentiment/:owner/:repo', async (req, res) => {
       }
 
       commits = pageCommits.map(c => {
-        const msg = c.commit.message;
+        const msg = c.commit?.message || '';
         const score = sentimentAnalyzer.analyze(msg).score;
+        const dateStr = c.commit?.author?.date || c.commit?.committer?.date || new Date().toISOString();
         return {
-          date: c.commit.author.date,
+          date: dateStr,
           score,
           message: msg
         };
@@ -199,7 +200,7 @@ router.get('/releases/:owner/:repo', async (req, res) => {
         const commitRes = await octokit.git.getCommit({ owner, repo, commit_sha: tag.commit.sha }).catch(() => null);
         return {
           name: tag.name,
-          date: commitRes ? commitRes.data.author.date : null
+          date: commitRes?.data?.author?.date || commitRes?.data?.committer?.date || null
         };
       }));
       releaseData = tagDetails.filter(t => t.date);
@@ -274,8 +275,8 @@ router.get('/activity-patterns/:owner/:repo', async (req, res) => {
       // Fetch commits
       const commitsRes = await octokit.repos.listCommits({ owner, repo, per_page: 100 }).catch(() => ({ data: [] }));
       commitData = commitsRes.data.map(c => ({
-        author: c.author ? c.author.login : c.commit.author.name,
-        date: c.commit.author.date
+        author: c.author ? c.author.login : (c.commit?.author?.name || c.commit?.committer?.name || 'Developer'),
+        date: c.commit?.author?.date || c.commit?.committer?.date || new Date().toISOString()
       }));
     }
 

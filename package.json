@@ -1,4 +1,12 @@
 {
+  "name": "git-repo-visualizer",
+  "private": true,
+  "scripts": {
+    "dev:backend": "npm --prefix backend run dev",
+    "dev:frontend": "npm --prefix frontend run dev",
+    "backend": "npm --prefix backend start",
+    "frontend": "npm --prefix frontend run dev"
+  },
   "dependencies": {
     "@octokit/rest": "^22.0.0",
     "axios": "^1.13.1",
