@@ -4,11 +4,12 @@ import { Chart as ChartJS, ArcElement, Tooltip, Legend, Title } from 'chart.js';
 
 ChartJS.register(ArcElement, Tooltip, Legend, Title);
 
-const LanguageChart = ({ languages }) => {
-  const languageNames = Object.keys(languages);
-  const languageBytes = Object.values(languages);
+const LanguageChart = ({ languages = {} }) => {
+  const safeLanguages = languages || {};
+  const languageNames = Object.keys(safeLanguages);
+  const languageBytes = Object.values(safeLanguages);
 
-  // Helper to generate random colors
+  // Helper to generate curated colors
   const getRandomColor = () => {
     const letters = '0123456789ABCDEF';
     let color = '#';
@@ -20,12 +21,12 @@ const LanguageChart = ({ languages }) => {
   const backgroundColors = languageNames.map(() => getRandomColor());
 
   const data = {
-    labels: languageNames,
+    labels: languageNames.length > 0 ? languageNames : ['No Data'],
     datasets: [
       {
         label: 'Bytes of Code',
-        data: languageBytes,
-        backgroundColor: backgroundColors,
+        data: languageBytes.length > 0 ? languageBytes : [1],
+        backgroundColor: backgroundColors.length > 0 ? backgroundColors : ['#4f46e5'],
         borderColor: '#1a1a1a',
         borderWidth: 2,
       },

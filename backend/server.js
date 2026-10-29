@@ -9,7 +9,7 @@ const session = require('express-session');
 const passport = require('passport');
 const cron = require('node-cron');
 const nodemailer = require('nodemailer');
-const { connectDB, Subscription, AiInsightsCache } = require('./models');
+const { connectDB, Subscription, AiInsightsCache, Leaderboard, isDBConnected, memoryStore } = require('./models');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 
 const app = express();
@@ -36,19 +36,7 @@ const getMockFallback = (owner, repo) => {
 
 // Enable CORS for Vercel, localhost, and custom domains
 app.use(cors({
-  origin: (origin, callback) => {
-    // Allow requests with no origin (like mobile apps, curl, server-to-server)
-    if (!origin) return callback(null, true);
-    // Allow localhost and vercel app domains
-    if (origin.includes('localhost') || origin.includes('127.0.0.1') || origin.includes('.vercel.app')) {
-      return callback(null, true);
-    }
-    const frontendUrl = process.env.FRONTEND_URL;
-    if (frontendUrl && origin.startsWith(frontendUrl.replace(/\/$/, ''))) {
-      return callback(null, true);
-    }
-    return callback(null, true); // Permissive CORS for public visualizer API
-  },
+  origin: true,
   credentials: true
 }));
 app.use(express.json());
@@ -70,7 +58,7 @@ app.get('/health', (req, res) => {
 // Rate Limiting
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 300, // Limit each IP to 300 requests per window
+  max: 5000, // Generous limit for interactive developer dashboard
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: 'Too many requests from this IP, please try again after 15 minutes.' }
@@ -108,6 +96,7 @@ app.use('/api/enterprise', enterpriseRoutes);
 cron.schedule('0 9 * * 1', async () => {
   console.log('Running Weekly Email Digest Cron Job...');
   try {
+    if (!isDBConnected()) return;
     const subs = await Subscription.find({});
     if (subs.length === 0) return;
 
@@ -274,9 +263,10 @@ app.post('/api/health-score', async (req, res) => {
       return res.status(400).json({ msg: 'Repository URL is required.' });
     }
 
-    const urlParts = repoUrl.split('/');
-    const owner = urlParts[urlParts.length - 2];
+    const cleanUrl = repoUrl.trim().replace(/\/+$/, '');
+    const urlParts = cleanUrl.split('/');
     const repo = urlParts[urlParts.length - 1];
+    const owner = urlParts[urlParts.length - 2];
 
     if (!owner || !repo) {
       return res.status(400).json({ msg: 'Invalid GitHub repository URL format.' });
@@ -602,9 +592,10 @@ app.post('/api/analyze-repo', async (req, res) => {
       return res.status(400).json({ msg: 'Repository URL is required.' });
     }
 
-    const urlParts = repoUrl.split('/');
-    const owner = urlParts[urlParts.length - 2];
+    const cleanUrl = repoUrl.trim().replace(/\/+$/, '');
+    const urlParts = cleanUrl.split('/');
     const repo = urlParts[urlParts.length - 1];
+    const owner = urlParts[urlParts.length - 2];
 
     if (!owner || !repo) {
       return res.status(400).json({ msg: 'Invalid GitHub repository URL format.' });
@@ -616,20 +607,36 @@ app.post('/api/analyze-repo', async (req, res) => {
     if (getMockFallback(owner, repo)) {
       console.log('Returning mock database analysis for demo...');
       try {
-        const { Leaderboard } = require('./models');
-        await Leaderboard.findOneAndUpdate(
-          { repoUrl: `https://github.com/${owner}/${repo}` },
-          { healthScore: 82, language: 'TypeScript', stars: 1204, lastActive: new Date(), timestamp: new Date() },
-          { upsert: true }
-        );
+        if (isDBConnected()) {
+          await Leaderboard.findOneAndUpdate(
+            { repoUrl: `https://github.com/${owner}/${repo}` },
+            { healthScore: 82, language: 'TypeScript', stars: 1204, lastActive: new Date(), timestamp: new Date() },
+            { upsert: true }
+          );
+        } else {
+          memoryStore.leaderboard.set(`https://github.com/${owner}/${repo}`, {
+            repoUrl: `https://github.com/${owner}/${repo}`,
+            healthScore: 82,
+            language: 'TypeScript',
+            stars: 1204,
+            lastActive: new Date(),
+            timestamp: new Date()
+          });
+        }
       } catch (e) {
-        console.log('Leaderboard mock save error:', e.message);
+        console.log('Leaderboard mock save warning:', e.message);
       }
       return res.json(getMockData(owner, repo));
     }
 
     // --- Fetch Live Data via Octokit ---
-    const repoDetails = await octokit.repos.get({ owner, repo });
+    let repoDetails;
+    try {
+      repoDetails = await octokit.repos.get({ owner, repo });
+    } catch (liveErr) {
+      console.warn(`Live Octokit fetch failed for ${owner}/${repo} (${liveErr.message}). Falling back to mock data.`);
+      return res.json(getMockData(owner, repo));
+    }
     const defaultBranch = repoDetails.data.default_branch;
 
     const [
@@ -749,22 +756,32 @@ app.post('/api/analyze-repo', async (req, res) => {
 
     // Auto-submit to leaderboard
     try {
-      const { Leaderboard } = require('./models');
       const metrics = await computeHealthMetrics(owner, repo);
       const topLanguage = Object.keys(languages || {}).shift() || 'JavaScript';
-      await Leaderboard.findOneAndUpdate(
-        { repoUrl: `https://github.com/${owner}/${repo}` },
-        { 
-          healthScore: metrics.score, 
-          language: topLanguage, 
-          stars: repoDetails.data.stargazers_count || 0, 
-          lastActive: new Date(repoDetails.data.updated_at), 
-          timestamp: new Date() 
-        },
-        { upsert: true }
-      );
+      if (isDBConnected()) {
+        await Leaderboard.findOneAndUpdate(
+          { repoUrl: `https://github.com/${owner}/${repo}` },
+          { 
+            healthScore: metrics.score, 
+            language: topLanguage, 
+            stars: repoDetails.data.stargazers_count || 0, 
+            lastActive: new Date(repoDetails.data.updated_at), 
+            timestamp: new Date() 
+          },
+          { upsert: true }
+        );
+      } else {
+        memoryStore.leaderboard.set(`https://github.com/${owner}/${repo}`, {
+          repoUrl: `https://github.com/${owner}/${repo}`,
+          healthScore: metrics.score,
+          language: topLanguage,
+          stars: repoDetails.data.stargazers_count || 0,
+          lastActive: new Date(repoDetails.data.updated_at),
+          timestamp: new Date()
+        });
+      }
     } catch (e) {
-      console.log('Leaderboard auto-save error:', e.message);
+      console.log('Leaderboard auto-save warning:', e.message);
     }
 
     res.json({
@@ -1218,6 +1235,6 @@ function calculateBusFactor(contributors, commitHistory, fileHotspots) {
   return { busFactor, busFactorRiskGauge, riskyFiles };
 }
 
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0', () => {
   console.log(`Backend server is running on http://localhost:${PORT}`);
 });

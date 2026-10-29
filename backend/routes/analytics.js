@@ -1,7 +1,7 @@
 const express = require('express');
 const Sentiment = require('sentiment');
 const { Octokit } = require('@octokit/rest');
-const { AnalysisCache } = require('../models');
+const { AnalysisCache, safeCheckCache, safeSetCache } = require('../models');
 
 const router = express.Router();
 const sentimentAnalyzer = new Sentiment();
@@ -20,25 +20,11 @@ const getMockFallback = (owner, repo) => {
 
 // Caching helper
 async function checkCache(repoUrl, type) {
-  try {
-    const cached = await AnalysisCache.findOne({ repoUrl: `${repoUrl}-${type}` });
-    if (cached) return cached.data;
-  } catch (e) {
-    console.error('Cache read error:', e);
-  }
-  return null;
+  return safeCheckCache(`${repoUrl}-${type}`);
 }
 
 async function setCache(repoUrl, type, data) {
-  try {
-    await AnalysisCache.updateOne(
-      { repoUrl: `${repoUrl}-${type}` },
-      { data, cachedAt: new Date() },
-      { upsert: true }
-    );
-  } catch (e) {
-    console.error('Cache write error:', e);
-  }
+  return safeSetCache(`${repoUrl}-${type}`, data);
 }
 
 // [1] COMMIT SENTIMENT ANALYZER

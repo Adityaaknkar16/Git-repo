@@ -8,13 +8,15 @@ import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Toolti
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
-const CommitActivityChart = ({ activity }) => {
+const CommitActivityChart = ({ activity = [] }) => {
+  const safeActivity = Array.isArray(activity) ? activity : [];
+
   const data = {
-    labels: activity.map(a => a.date), // The dates
+    labels: safeActivity.map(a => a?.date || ''), // The dates
     datasets: [
       {
         label: 'Commits',
-        data: activity.map(a => a.commits), // The commit counts
+        data: safeActivity.map(a => Number(a?.commits || 0)), // The commit counts
         backgroundColor: '#646cff',
         borderRadius: 4,
       },
@@ -52,4 +54,5 @@ const CommitActivityChart = ({ activity }) => {
     </div>
   );
 };
+
 export default CommitActivityChart;

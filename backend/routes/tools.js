@@ -1,6 +1,6 @@
 const express = require('express');
 const { Octokit } = require('@octokit/rest');
-const { AnalysisCache } = require('../models');
+const { AnalysisCache, safeCheckCache, safeSetCache } = require('../models');
 
 const router = express.Router();
 
@@ -16,23 +16,13 @@ const getMockFallback = (owner, repo) => {
   return !hasToken || owner === 'demo' || repo === 'demo';
 };
 
-// Caching helpers
+// Caching helpers (safe in-memory or mongo)
 async function checkCache(repoUrl, type) {
-  try {
-    const cached = await AnalysisCache.findOne({ repoUrl: `${repoUrl}-${type}` });
-    if (cached) return cached.data;
-  } catch (e) {}
-  return null;
+  return safeCheckCache(`${repoUrl}-${type}`);
 }
 
 async function setCache(repoUrl, type, data) {
-  try {
-    await AnalysisCache.updateOne(
-      { repoUrl: `${repoUrl}-${type}` },
-      { data, cachedAt: new Date() },
-      { upsert: true }
-    );
-  } catch (e) {}
+  return safeSetCache(`${repoUrl}-${type}`, data);
 }
 
 // [9] PR REVIEW CHECKLIST GENERATOR

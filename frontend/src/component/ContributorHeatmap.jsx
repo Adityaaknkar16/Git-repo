@@ -5,12 +5,15 @@
 import React from 'react';
 import { PlusCircle, MinusCircle, GitCommit } from 'lucide-react';
 
-export default function ContributorHeatmap({ contributors, commitHistory }) {
+export default function ContributorHeatmap({ contributors = [], commitHistory = [] }) {
+  const safeContributors = Array.isArray(contributors) ? contributors : [];
+  const safeCommitHistory = Array.isArray(commitHistory) ? commitHistory : [];
+
   // Let's build a grid representing the last 6 weeks (7 days each) for commit activity
   const weeks = Array.from({ length: 6 }, () => Array(7).fill(0));
   
   // Distribute commits over weeks/days randomly to simulate heatmap density
-  commitHistory.forEach((c, idx) => {
+  safeCommitHistory.forEach((c, idx) => {
     const w = idx % 6;
     const d = (idx + 3) % 7;
     weeks[w][d] += 1;
@@ -27,24 +30,24 @@ export default function ContributorHeatmap({ contributors, commitHistory }) {
   return (
     <div className="contributor-insights">
       <div className="stats-row">
-        {contributors.map(c => (
-          <div className="author-stat-card glass-panel" key={c.login}>
+        {safeContributors.map(c => (
+          <div className="author-stat-card glass-panel" key={c.login || Math.random()}>
             <div className="header-info">
-              <img src={c.avatar_url} alt={c.login} className="avatar" />
-              <h4>{c.login}</h4>
+              <img src={c.avatar_url || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&h=100&fit=crop'} alt={c.login || 'User'} className="avatar" />
+              <h4>{c.login || 'Developer'}</h4>
             </div>
             <div className="stats-data">
               <div className="stat-item">
                 <GitCommit size={14} className="commit-icon" />
-                <span>{c.contributions} Commits</span>
+                <span>{c.contributions || 0} Commits</span>
               </div>
               <div className="stat-item positive">
                 <PlusCircle size={14} />
-                <span>+{c.additions} lines</span>
+                <span>+{c.additions || 0} lines</span>
               </div>
               <div className="stat-item negative">
                 <MinusCircle size={14} />
-                <span>-{c.deletions} lines</span>
+                <span>-{c.deletions || 0} lines</span>
               </div>
             </div>
           </div>
