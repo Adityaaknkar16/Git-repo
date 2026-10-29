@@ -66,7 +66,7 @@ export default function NightOwlEarlyBird({ owner, repo }) {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '20px' }}>
+      <div className="activity-clock-grid">
         {/* Contributors List Selector */}
         <div className="card glass-panel" style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
           <h3>Contributors</h3>

@@ -23,11 +23,24 @@ export default function CommitGraph({ commits, defaultBranch }) {
     return matchAuthor && matchSearch;
   });
 
+  const [containerWidth, setContainerWidth] = useState(0);
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (containerRef.current) {
+        setContainerWidth(containerRef.current.clientWidth);
+      }
+    };
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   useEffect(() => {
     if (!svgRef.current || filteredCommits.length === 0) return;
 
-    const width = containerRef.current.clientWidth || 800;
-    const height = 400;
+    const width = containerRef.current?.clientWidth || 800;
+    const height = window.innerWidth < 600 ? 280 : 400;
 
     // Clear previous SVG contents
     d3.select(svgRef.current).selectAll('*').remove();
@@ -137,7 +150,7 @@ export default function CommitGraph({ commits, defaultBranch }) {
       const initialTransform = d3.zoomIdentity.translate(50, 0).scale(0.9);
       svg.call(zoom.transform, initialTransform);
     }
-  }, [filteredCommits, commits]);
+  }, [filteredCommits, commits, containerWidth]);
 
   return (
     <div className="commit-graph-container" ref={containerRef}>
@@ -264,6 +277,25 @@ export default function CommitGraph({ commits, defaultBranch }) {
           color: var(--muted);
           font-size: 18px;
           cursor: pointer;
+        }
+        @media (max-width: 600px) {
+          .filter-bar {
+            flex-direction: column;
+          }
+          .filter-input-group {
+            width: 100%;
+            min-width: 0;
+          }
+          .reset-btn {
+            width: 100%;
+            justify-content: center;
+          }
+          .node-detail-panel {
+            left: 8px;
+            right: 8px;
+            bottom: 8px;
+            padding: 10px;
+          }
         }
       `}</style>
     </div>

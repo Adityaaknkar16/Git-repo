@@ -257,6 +257,24 @@ export default function BranchCompare({ repoUrl, branches }) {
           white-space: pre-wrap;
         }
         .no-patch { padding: 12px; font-size: 12px; color: var(--muted); margin: 0; }
+        @media (max-width: 600px) {
+          .select-row {
+            flex-direction: column;
+            align-items: stretch;
+          }
+          .compare-divider {
+            margin: 4px 0;
+            transform: rotate(90deg);
+          }
+          .summary-cards {
+            grid-template-columns: 1fr;
+          }
+          .file-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 6px;
+          }
+        }
       `}</style>
     </div>
   );

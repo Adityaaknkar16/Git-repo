@@ -82,18 +82,20 @@ export default function RepoReportCard({ owner, repo, stats }) {
         className="card glass-panel" 
         style={{ 
           maxWidth: '650px', 
+          width: '100%',
           margin: '0 auto', 
-          padding: '40px', 
+          padding: 'clamp(16px, 4vw, 40px)', 
           background: '#0b0b0e', 
           border: '1px solid var(--border)',
           display: 'flex',
           flexDirection: 'column',
           gap: '24px',
-          color: 'white'
+          color: 'white',
+          boxSizing: 'border-box'
         }}
       >
         {/* Header */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', borderBottom: '2px solid rgba(255,255,255,0.05)', paddingBottom: '20px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', borderBottom: '2px solid rgba(255,255,255,0.05)', paddingBottom: '20px', flexWrap: 'wrap', gap: '12px' }}>
           <div>
             <h1 style={{ margin: 0, fontSize: '24px', background: 'var(--gradient)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
               REPOSITORY REPORT CARD
@@ -114,7 +116,7 @@ export default function RepoReportCard({ owner, repo, stats }) {
         </div>
 
         {/* Big Overall Grade */}
-        <div style={{ display: 'flex', justifyContent: 'space-around', alignItems: 'center', background: 'rgba(255,255,255,0.01)', border: '1px solid var(--border)', padding: '24px', borderRadius: '12px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-around', alignItems: 'center', background: 'rgba(255,255,255,0.01)', border: '1px solid var(--border)', padding: 'clamp(14px, 3vw, 24px)', borderRadius: '12px', flexWrap: 'wrap', gap: '14px' }}>
           <div style={{ textAlign: 'center' }}>
             <span className="text-muted" style={{ fontSize: '13px', fontWeight: '700', textTransform: 'uppercase' }}>Overall Rating</span>
             <h2 style={{ fontSize: '72px', margin: '4px 0 0', fontWeight: '800', color: getGradeColor(grades.overall), lineHeight: 1 }}>
@@ -127,7 +129,7 @@ export default function RepoReportCard({ owner, repo, stats }) {
         </div>
 
         {/* Breakdown Card Grades */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+        <div className="report-card-grid">
           <div className="issue-card" style={{ padding: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div>
               <strong style={{ fontSize: '14px' }}>Knowledge Distribution</strong>

@@ -19,6 +19,7 @@ import CodeQualityMetrics from './component/CodeQualityMetrics.jsx';
 import AIInsights from './component/AIInsights.jsx';
 import FileTree from './FileTree.jsx';
 import { Toaster, toast } from 'react-hot-toast';
+import DotBackground from './component/DotBackground.jsx';
 
 // Import New Components
 import HealthScore from './component/HealthScore.jsx';
@@ -216,6 +217,7 @@ export default function App() {
 
   return (
     <div className="app">
+      <DotBackground />
       <Toaster position="bottom-right" />
       <header className="header glass-panel">
         <div className="title-row">

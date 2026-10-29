@@ -48,7 +48,7 @@ export default function WeeklyDigest({ repoUrl }) {
           <Check size={16} /> Successfully subscribed to weekly digests!
         </div>
       ) : (
-        <form onSubmit={handleSubscribe} style={{ display: 'flex', gap: '8px', marginTop: '10px' }}>
+        <form onSubmit={handleSubscribe} style={{ display: 'flex', gap: '8px', marginTop: '10px', flexWrap: 'wrap' }}>
           <input 
             type="email" 
             placeholder="dev@example.com" 
@@ -56,7 +56,7 @@ export default function WeeklyDigest({ repoUrl }) {
             onChange={(e) => setEmail(e.target.value)}
             required
             style={{ 
-              flex: 1, 
+              flex: '1 1 200px', 
               padding: '10px 12px', 
               fontSize: '13px', 
               borderRadius: '8px', 

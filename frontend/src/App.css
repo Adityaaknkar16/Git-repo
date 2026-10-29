@@ -1,12 +1,13 @@
 :root {
-  --bg: #0b0b0e;
-  --panel: rgba(22, 22, 29, 0.7);
+  --bg: #05030f;
+  --panel: rgba(15, 12, 35, 0.75);
   --text: #f3f3f6;
   --muted: #8e90a6;
   --accent: #5856d6;
   --accent-glow: rgba(88, 86, 214, 0.35);
-  --border: rgba(46, 46, 62, 0.5);
+  --border: rgba(255, 255, 255, 0.08);
   --gradient: linear-gradient(135deg, #5856d6, #c644fc);
+  --bg-overlay-opacity: 0.72;
 }
 
 * {
@@ -19,12 +20,35 @@ html, body, #root {
 
 body {
   margin: 0;
-  background: var(--bg);
-  background-image: radial-gradient(circle at 10% 20%, rgba(88, 86, 214, 0.08) 0%, transparent 40%),
-                    radial-gradient(circle at 90% 80%, rgba(198, 68, 252, 0.08) 0%, transparent 40%);
+  background: #05030f;
   color: var(--text);
   font-family: 'Outfit', 'Inter', system-ui, -apple-system, sans-serif;
   -webkit-font-smoothing: antialiased;
+}
+
+/* Live Animated Dot-Matrix Canvas Background */
+.dot-bg-container {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.dot-bg-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.dot-bg-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(8, 6, 20, var(--bg-overlay-opacity, 0.72));
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
 }
 
 .app {
@@ -49,7 +73,9 @@ body {
   display: flex;
   flex-direction: column;
   gap: 14px;
-  background: rgba(15, 15, 20, 0.85);
+  background: rgba(15, 12, 35, 0.82);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   position: sticky;
   top: 0;
   z-index: 100;
@@ -185,7 +211,9 @@ body {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  background: rgba(15, 15, 20, 0.6);
+  background: rgba(15, 12, 35, 0.65);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   flex-shrink: 0;
 }
 
@@ -240,7 +268,9 @@ body {
   border: 1px solid var(--border);
   border-radius: 14px;
   padding: 20px;
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
 }
 
 .card h2 {
@@ -385,24 +415,304 @@ body {
   border-top: 1px solid var(--border);
   color: var(--muted);
   font-size: 12px;
-  background: rgba(11, 11, 14, 0.9);
+  background: rgba(15, 12, 35, 0.75);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   display: flex;
   justify-content: space-between;
 }
 
+/* ==========================================================
+   RESPONSIVE DESIGN SYSTEM (ALL DEVICES: DESKTOP, TABLET, MOBILE)
+   ========================================================== */
+
+/* Universal Responsive Utilities */
+img, svg, canvas {
+  max-width: 100%;
+}
+
+pre, code {
+  max-width: 100%;
+  overflow-x: auto;
+  word-break: break-word;
+}
+
+/* Tablet & Smaller Devices (<= 1024px) */
 @media (max-width: 1024px) {
   .dashboard-container {
     flex-direction: column;
   }
+
   .sidebar {
     width: 100%;
     border-right: none;
     border-bottom: 1px solid var(--border);
     flex-direction: row;
     overflow-x: auto;
+    overflow-y: hidden;
+    padding: 8px 12px;
+    gap: 6px;
+    scrollbar-width: thin;
+    -webkit-overflow-scrolling: touch;
+    background: rgba(15, 12, 35, 0.9);
   }
+
+  .sidebar::-webkit-scrollbar {
+    height: 4px;
+  }
+
+  .sidebar::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 2px;
+  }
+
+  .tab-btn {
+    white-space: nowrap;
+    flex-shrink: 0;
+    padding: 8px 12px;
+    font-size: 13px;
+    gap: 8px;
+    border-radius: 6px;
+  }
+
+  .tab-btn.active {
+    border-left: none;
+    border-bottom: 2px solid var(--accent);
+    background: var(--accent-glow);
+  }
+
+  .tab-content {
+    padding: 20px 16px;
+  }
+
   .grid {
     grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .activity-clock-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+}
+
+/* Phablets & Mobile Landscape (<= 768px) */
+@media (max-width: 768px) {
+  .header {
+    padding: 16px 16px;
+    gap: 12px;
+  }
+
+  .header h1 {
+    font-size: 20px;
+  }
+
+  .health-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .score-card {
+    padding: 20px 16px;
+  }
+
+  .breakdown-card {
+    padding: 20px 16px;
+  }
+
+  .snippet-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .battle-grid-vs {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+
+  .vs-center {
+    margin: 8px 0;
+  }
+
+  .report-card-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .bus-metric-container {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 14px;
+  }
+
+  .guide-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  .guide-toolbar .toolbar-left {
+    justify-content: space-between;
+  }
+
+  .guide-toolbar .toolbar-actions {
+    justify-content: flex-end;
+  }
+}
+
+/* Mobile Portrait & Small Screens (<= 600px) */
+@media (max-width: 600px) {
+  .header {
+    padding: 12px 14px;
+    gap: 10px;
+  }
+
+  .header .title-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  .header .title-row > div {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    gap: 8px;
+  }
+
+  .header h1 {
+    font-size: 18px;
+    text-align: center;
+    letter-spacing: -0.3px;
+  }
+
+  .input-row {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .input-row input {
+    width: 100%;
+    padding: 10px 14px;
+    font-size: 13px;
+  }
+
+  .input-row button, .demo-btn-large {
+    width: 100%;
+    padding: 11px 16px;
+    font-size: 13px;
+  }
+
+  .meta {
+    font-size: 12px;
+    gap: 8px;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .meta .export-btn {
+    margin-left: 0;
+    width: 100%;
+    justify-content: center;
+    padding: 6px 12px;
+  }
+
+  .tab-content {
+    padding: 14px 10px;
+  }
+
+  .card {
+    padding: 14px 12px;
+    border-radius: 10px;
+  }
+
+  .card h2 {
+    font-size: 16px;
+    margin-bottom: 12px;
+  }
+
+  .circle-wrapper {
+    width: 140px;
+    height: 140px;
+    margin: 10px 0;
+  }
+
+  .circle-wrapper svg {
+    width: 140px;
+    height: 140px;
+  }
+
+  .score-num {
+    font-size: 36px;
+  }
+
+  .personas-grid {
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 10px;
+  }
+
+  .persona-card {
+    padding: 12px;
+  }
+
+  .persona-avatar {
+    width: 48px;
+    height: 48px;
+  }
+
+  .battle-inputs {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .comparison-row {
+    grid-template-columns: 1fr 1fr 1fr;
+    padding: 10px 4px;
+    font-size: 11px;
+  }
+
+  .comp-val {
+    font-size: 12px;
+  }
+
+  .comp-label {
+    font-size: 10px;
+  }
+
+  .empty-state {
+    margin: 30px auto;
+    padding: 20px 12px;
+    gap: 12px;
+  }
+
+  .empty-state h2 {
+    font-size: 18px;
+  }
+
+  .footer {
+    flex-direction: column;
+    gap: 8px;
+    text-align: center;
+    padding: 14px;
+  }
+}
+
+/* Extra Small Phones (<= 400px) */
+@media (max-width: 400px) {
+  .header .title-row > div {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .header .title-row > div button {
+    width: 100%;
+  }
+
+  .tab-btn {
+    padding: 6px 10px;
+    font-size: 12px;
   }
 }
 
