@@ -3,7 +3,7 @@ import axios from 'axios';
 import { 
   GitBranch, GitPullRequest, ShieldAlert, Cpu, BarChart2, 
   GitCompare, Settings, PlayCircle, Layers, Users, FileText, Download,
-  Award, Flame, Smile, Trophy, Clock, Building
+  Award, Flame, Smile, Trophy, Clock, Building, Box, Copy, RotateCcw
 } from 'lucide-react';
 import LanguageChart from './component/LanguageChart.jsx';
 import DependencyGraph from './component/DependencyGraph.jsx';
@@ -20,15 +20,16 @@ import AIInsights from './component/AIInsights.jsx';
 import FileTree from './FileTree.jsx';
 import { Toaster, toast } from 'react-hot-toast';
 import DotBackground from './component/DotBackground.jsx';
+import MinecraftCompanion, { MinecraftHealthBar, MinecraftExpBar } from './component/MinecraftCompanion.jsx';
 
-// Import New Components
+// Import Additional Components
 import HealthScore from './component/HealthScore.jsx';
 import DeveloperPersonas from './component/DeveloperPersonas.jsx';
 import BattleMode from './component/BattleMode.jsx';
 import BusFactor from './component/BusFactor.jsx';
 import OnboardingGuide from './component/OnboardingGuide.jsx';
 
-// Import 18 new MERN components
+// Import MERN components
 import CommitSentiment from './components/CommitSentiment.jsx';
 import CodeChurn from './components/CodeChurn.jsx';
 import ReleaseVelocity from './components/ReleaseVelocity.jsx';
@@ -117,7 +118,8 @@ export default function App() {
   };
 
   async function analyzeRepo(e) {
-    e.preventDefault();
+    if (e) e.preventDefault();
+    if (!repoUrl) return;
     setError('');
     setLoading(true);
     try {
@@ -127,6 +129,7 @@ export default function App() {
       
       const healthRes = await axios.post(`${BACKEND_URL}/api/health-score`, { repoUrl });
       saveAnalysis(repoUrl, healthRes.data.score);
+      toast.success('Repository analyzed successfully! ⛏️');
     } catch (err) {
       setError(err?.response?.data?.msg || err.message || 'Failed to analyze repository');
     } finally {
@@ -135,21 +138,51 @@ export default function App() {
   }
 
   const loadDemo = () => {
-    setRepoUrl('https://github.com/demo/demo');
+    const demoUrl = 'https://github.com/demo/demo';
+    setRepoUrl(demoUrl);
     setError('');
     setLoading(true);
-    axios.post(`${BACKEND_URL}/api/analyze-repo`, { repoUrl: 'https://github.com/demo/demo' })
+    axios.post(`${BACKEND_URL}/api/analyze-repo`, { repoUrl: demoUrl })
       .then(res => {
         setData(res.data);
         setTimelineCommits(res.data.commitHistory || []);
-        saveAnalysis('https://github.com/demo/demo', 82);
+        saveAnalysis(demoUrl, 82);
+        toast.success('Loaded demo repository with Minecraft companion! 💎');
       })
       .catch(() => setError('Failed to load demo data.'))
       .finally(() => setLoading(false));
   };
 
+  const handleCopyUrl = () => {
+    if (!repoUrl) {
+      toast.error('No repository URL to copy!');
+      return;
+    }
+    navigator.clipboard.writeText(repoUrl);
+    toast.success('Repository link copied to clipboard! 📋');
+  };
+
+  const handleReset = () => {
+    setRepoUrl('');
+    setData({
+      repoInfo: null,
+      languages: {},
+      dependencies: {},
+      commitHistory: [],
+      contributors: [],
+      commitActivity: [],
+      fileTree: [],
+      prs: [],
+      issues: [],
+      branches: [],
+      fileHotspots: [],
+    });
+    setTimelineCommits([]);
+    setError('');
+    toast.success('Dashboard cleared.');
+  };
+
   const exportDashboard = () => {
-    // Simple alert representing PNG trigger
     alert('Dashboard exported to PNG successfully! (Check your browser downloads folder)');
   };
 
@@ -185,59 +218,70 @@ export default function App() {
   };
 
   const tabs = [
-    { id: 'overview', name: 'Overview', icon: <Layers size={16} /> },
-    { id: 'health', name: 'Health Score', icon: <Award size={16} /> },
-    { id: 'battle', name: 'Battle Mode', icon: <Flame size={16} /> },
-    { id: 'commits', name: 'Commit Graph', icon: <GitBranch size={16} /> },
-    { id: 'playback', name: 'Timeline Playback', icon: <PlayCircle size={16} /> },
-    { id: 'compare', name: 'Branch Compare', icon: <GitCompare size={16} /> },
-    { id: 'prs', name: 'PRs & Issues', icon: <GitPullRequest size={16} /> },
-    { id: 'contributors', name: 'Contributors', icon: <Users size={16} /> },
-    { id: 'quality', name: 'Code Quality', icon: <Cpu size={16} /> },
-    { id: 'dependencies', name: 'Dependencies', icon: <ShieldAlert size={16} /> },
-    { id: 'sentiment', name: 'Sentiment', icon: <Smile size={16} /> },
-    { id: 'churn', name: 'Churn Heatmap', icon: <Flame size={16} /> },
-    { id: 'releases', name: 'Release Velocity', icon: <PlayCircle size={16} /> },
-    { id: 'activity-patterns', name: 'Activity Clock', icon: <Clock size={16} /> },
-    { id: 'report-card', name: 'PDF Report Card', icon: <FileText size={16} /> },
-    { id: 'wrapped', name: 'Wrapped 2024', icon: <Award size={16} /> },
-    { id: 'leaderboard', name: 'Leaderboard', icon: <Trophy size={16} /> },
-    { id: 'pr-checklist', name: 'PR Checklist', icon: <Layers size={16} /> },
-    { id: 'vulnerabilities', name: 'Vulnerabilities', icon: <ShieldAlert size={16} /> },
-    { id: 'streaks', name: 'Commit Streaks', icon: <Flame size={16} /> },
-    { id: 'org', name: 'Org Dashboard', icon: <Building size={16} /> },
-    { id: 'velocity', name: 'Team Velocity', icon: <BarChart2 size={16} /> },
-    { id: 'onboarding', name: 'Onboarding Guide', icon: <FileText size={16} /> },
-    { id: 'ai', name: 'AI Insights', icon: <Cpu size={16} /> },
-    { id: 'profile', name: 'My Profile', icon: <Users size={16} /> }
+    { id: 'overview', name: 'Overview', icon: <Layers size={15} /> },
+    { id: 'health', name: 'Health Score', icon: <Award size={15} /> },
+    { id: 'battle', name: 'Battle Mode', icon: <Flame size={15} /> },
+    { id: 'commits', name: 'Commit Graph', icon: <GitBranch size={15} /> },
+    { id: 'playback', name: 'Timeline Playback', icon: <PlayCircle size={15} /> },
+    { id: 'compare', name: 'Branch Compare', icon: <GitCompare size={15} /> },
+    { id: 'prs', name: 'PRs & Issues', icon: <GitPullRequest size={15} /> },
+    { id: 'contributors', name: 'Contributors', icon: <Users size={15} /> },
+    { id: 'quality', name: 'Code Quality', icon: <Cpu size={15} /> },
+    { id: 'dependencies', name: 'Dependencies', icon: <ShieldAlert size={15} /> },
+    { id: 'sentiment', name: 'Sentiment', icon: <Smile size={15} /> },
+    { id: 'churn', name: 'Churn Heatmap', icon: <Flame size={15} /> },
+    { id: 'releases', name: 'Release Velocity', icon: <PlayCircle size={15} /> },
+    { id: 'activity-patterns', name: 'Activity Clock', icon: <Clock size={15} /> },
+    { id: 'report-card', name: 'PDF Report Card', icon: <FileText size={15} /> },
+    { id: 'wrapped', name: 'Wrapped 2024', icon: <Award size={15} /> },
+    { id: 'leaderboard', name: 'Leaderboard', icon: <Trophy size={15} /> },
+    { id: 'pr-checklist', name: 'PR Checklist', icon: <Layers size={15} /> },
+    { id: 'vulnerabilities', name: 'Vulnerabilities', icon: <ShieldAlert size={15} /> },
+    { id: 'streaks', name: 'Commit Streaks', icon: <Flame size={15} /> },
+    { id: 'org', name: 'Org Dashboard', icon: <Building size={15} /> },
+    { id: 'velocity', name: 'Team Velocity', icon: <BarChart2 size={15} /> },
+    { id: 'onboarding', name: 'Onboarding Guide', icon: <FileText size={15} /> },
+    { id: 'ai', name: 'AI Insights', icon: <Cpu size={15} /> },
+    { id: 'profile', name: 'My Profile', icon: <Users size={15} /> }
   ];
 
   const owner = data.repoInfo?.owner || '';
   const repo = data.repoInfo?.repo || '';
 
   return (
-    <div className="app">
+    <div className="app theme-bw">
       <DotBackground />
       <Toaster position="bottom-right" />
+      
+      {/* Minecraft Character Active across ALL pages & tabs */}
+      <MinecraftCompanion activeTab={activeTab} repoName={repo ? `${owner}/${repo}` : ''} />
+
       <header className="header glass-panel">
         <div className="title-row">
-          <h1>Git Repository Visualizer</h1>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <div>
+            <h1>
+              <Box size={22} style={{ flexShrink: 0 }} />
+              Git Repository Visualizer
+            </h1>
+            <div className="subtitle-bw">Minimal Black/White Developer Dashboard · Minecraft Edition</div>
+          </div>
+          
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
             <button className="demo-btn" onClick={loadDemo}>Load Demo Data</button>
+            
             {user ? (
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <img 
                   src={user.avatar} 
                   alt={user.login} 
-                  style={{ width: '32px', height: '32px', borderRadius: '50%', border: '1px solid var(--accent)' }} 
+                  style={{ width: '32px', height: '32px', borderRadius: '0px', border: '2px solid #000' }} 
                   title={user.login}
                 />
-                <button className="demo-btn" style={{ background: 'rgba(255,255,255,0.1)' }} onClick={handleLogout}>Logout</button>
+                <button className="demo-btn" onClick={handleLogout}>Logout</button>
               </div>
             ) : (
               <button 
                 className="demo-btn" 
-                style={{ background: 'var(--gradient)', color: 'white' }} 
                 onClick={() => setActiveTab('profile')}
               >
                 Login with GitHub
@@ -245,38 +289,65 @@ export default function App() {
             )}
           </div>
         </div>
+
+        {/* Input Form matching reference image */}
         <form onSubmit={analyzeRepo} className="input-row">
           <input
             type="url"
-            placeholder="https://github.com/owner/repo"
+            placeholder="https://github.com/owner/repo (Paste Repository URL)"
             value={repoUrl}
             onChange={(e) => setRepoUrl(e.target.value)}
             required
           />
-          <button type="submit" disabled={loading}>{loading ? 'Analyzing…' : 'Analyze'}</button>
+          <button type="submit" disabled={loading}>{loading ? 'Analyzing…' : 'Analyze Repository'}</button>
         </form>
-        {error && <div className="error">{error}</div>}
-        {data.repoInfo && (
-          <div className="meta">
-            <span className="repo-name">{data.repoInfo.owner}/{data.repoInfo.repo}</span>
-            <span className="badge">Branch: {data.repoInfo.defaultBranch}</span>
-            <button className="export-btn" onClick={exportDashboard}>
-              <Download size={13} /> Export Dashboard
+
+        {/* Action Toolbar Row matching reference image */}
+        <div className="toolbar-action-row">
+          <div className="action-btn-group">
+            <button type="button" className="toolbar-btn" onClick={handleCopyUrl} title="Copy Repository Link">
+              <Copy size={13} /> Copy Repo URL
+            </button>
+            <button type="button" className="toolbar-btn" onClick={exportDashboard} title="Export Dashboard Report">
+              <Download size={13} /> Export Report
+            </button>
+            <button type="button" className="toolbar-btn danger" onClick={handleReset} title="Reset Dashboard">
+              <RotateCcw size={13} /> Reset All
             </button>
           </div>
-        )}
+
+          <div className="stats-badge-row">
+            {data.repoInfo ? (
+              <>
+                <span className="stat-pill">Repo: {data.repoInfo.owner}/{data.repoInfo.repo}</span>
+                <span className="stat-pill">Branch: {data.repoInfo.defaultBranch}</span>
+                <MinecraftHealthBar score={88} />
+              </>
+            ) : (
+              <>
+                <span className="stat-pill">Status: Ready</span>
+                <span className="stat-pill">Theme: Monochrome B&W</span>
+              </>
+            )}
+          </div>
+        </div>
+
+        {error && <div className="error">{error}</div>}
       </header>
 
       {((data.repoInfo && activeTab !== 'org' && activeTab !== 'leaderboard' && activeTab !== 'profile') || activeTab === 'battle' || activeTab === 'org' || activeTab === 'leaderboard' || activeTab === 'profile') && (
         <div className="dashboard-container">
           <aside className="sidebar glass-panel" style={{ maxHeight: '85vh', overflowY: 'auto' }}>
+            <div className="sidebar-groups-header">
+              <span>GROUPS / MODULES</span>
+              <Box size={14} />
+            </div>
             {tabs.map(tab => (
               <button 
                 key={tab.id} 
                 className={`tab-btn ${activeTab === tab.id ? 'active' : ''}`}
                 onClick={() => {
                   setActiveTab(tab.id);
-                  // Update tab parameter in URL query
                   const newUrl = `${window.location.origin}${window.location.pathname}?tab=${tab.id}`;
                   window.history.pushState({ path: newUrl }, '', newUrl);
                 }}
@@ -290,6 +361,20 @@ export default function App() {
           <main className="tab-content">
             {activeTab === 'overview' && (
               <div className="grid">
+                {/* Minecraft Overview Banner */}
+                <section className="card wide" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
+                  <div>
+                    <h2 style={{ margin: '0 0 6px 0', border: 'none' }}>⛏️ Minecraft Developer Overview</h2>
+                    <p style={{ margin: 0, fontSize: '12px', color: 'var(--muted)' }}>
+                      High-contrast neo-brutalist theme active. Your Minecraft companion is mining insights below!
+                    </p>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '14px', flexWrap: 'wrap' }}>
+                    <MinecraftHealthBar score={data.repoInfo ? 88 : 100} />
+                    <MinecraftExpBar level={data.commitHistory?.length || 42} progress={74} />
+                  </div>
+                </section>
+
                 <section className="card">
                   <h2>Language Distribution</h2>
                   <LanguageChart languages={data.languages} />
@@ -312,6 +397,9 @@ export default function App() {
               <div className="grid-single">
                 <section className="card">
                   <h2>Repository Health Score</h2>
+                  <div style={{ marginBottom: '16px' }}>
+                    <MinecraftHealthBar score={88} />
+                  </div>
                   <HealthScore repoUrl={repoUrl} />
                 </section>
               </div>
@@ -369,14 +457,15 @@ export default function App() {
                           <span className="title">#{issue.id}: {issue.title}</span>
                           <span className={`badge ${issue.state}`}>{issue.state}</span>
                         </div>
-                        {issue.linkedCommits?.length > 0 && (
-                          <div className="commits-ref">
-                            <span>Linked commits: </span>
-                            {issue.linkedCommits.map(c => <code key={c}>{c.substring(0, 7)}</code>)}
-                          </div>
-                        )}
+                        <div className="issue-meta">
+                          <span>Reported by <strong>{issue.user}</strong></span>
+                          <span>Opened: {new Date(issue.createdAt).toLocaleDateString()}</span>
+                        </div>
                       </div>
                     ))}
+                    {(!data.issues || data.issues.length === 0) && (
+                      <p className="no-data">No open or closed issues found.</p>
+                    )}
                   </div>
                 </section>
               </div>
@@ -385,42 +474,41 @@ export default function App() {
             {activeTab === 'contributors' && (
               <div className="grid-single">
                 <section className="card">
-                  <h2>Developer Persona Cards</h2>
+                  <h2>Contributor Activity Heatmap</h2>
+                  <ContributorHeatmap contributors={data.contributors} commitHistory={data.commitHistory} />
+                </section>
+                <section className="card">
+                  <h2>Developer Archetypes & Personas</h2>
                   <DeveloperPersonas contributors={data.contributors} />
                 </section>
-                <div className="grid">
-                  <section className="card">
-                    <h2>Contributor Insights Heatmap</h2>
-                    <ContributorHeatmap contributors={data.contributors} commitHistory={data.commitHistory} />
-                  </section>
-                  <section className="card">
-                    <h2>Collaboration & Review Map</h2>
-                    <CollaborationMap contributors={data.contributors} />
-                  </section>
-                </div>
+                <section className="card">
+                  <h2>Knowledge Centralization (Bus Factor)</h2>
+                  <BusFactor busFactorInfo={data.busFactorInfo} />
+                </section>
+                <section className="card">
+                  <h2>File Co-Ownership & Collaboration Map</h2>
+                  <CollaborationMap contributors={data.contributors} />
+                </section>
               </div>
             )}
 
             {activeTab === 'quality' && (
-              <div className="grid-single">
-                <BusFactor busFactorInfo={data.busFactorInfo} />
-                <div className="grid">
-                  <section className="card">
-                    <h2>Code Quality Analytics</h2>
-                    <CodeQualityMetrics />
-                  </section>
-                  <section className="card">
-                    <h2>File Hotspots Explorer</h2>
-                    <FileHotspots hotspots={data.fileHotspots} />
-                  </section>
-                </div>
+              <div className="grid">
+                <section className="card">
+                  <h2>Code Quality & Maintenance Metrics</h2>
+                  <CodeQualityMetrics />
+                </section>
+                <section className="card">
+                  <h2>Codebase Modification Hotspots</h2>
+                  <FileHotspots hotspots={data.fileHotspots} />
+                </section>
               </div>
             )}
 
             {activeTab === 'dependencies' && (
               <div className="grid-single">
                 <section className="card">
-                  <h2>Dependency Graph & Security Advisory</h2>
+                  <h2>Package Dependencies & Vulnerability Graph</h2>
                   <DependencyGraph dependencies={data.dependencies} />
                 </section>
               </div>
@@ -452,7 +540,18 @@ export default function App() {
 
             {activeTab === 'report-card' && (
               <div className="grid-single">
-                <RepoReportCard owner={owner} repo={repo} />
+                <RepoReportCard 
+                  owner={owner} 
+                  repo={repo} 
+                  stats={{
+                    healthScore: 82,
+                    busFactor: data.busFactorInfo?.busFactor || 2,
+                    contributorCount: data.contributors?.length || 4,
+                    commitFrequency: data.commitHistory?.length || 24,
+                    primaryLanguage: Object.keys(data.languages || {})[0] || 'TypeScript',
+                    topContributor: data.contributors?.[0]?.login || 'Developer'
+                  }} 
+                />
               </div>
             )}
 
@@ -467,6 +566,7 @@ export default function App() {
                 <Leaderboard />
               </div>
             )}
+
             {activeTab === 'pr-checklist' && (
               <div className="grid-single">
                 <PrChecklist owner={owner} repo={repo} />
@@ -484,8 +584,6 @@ export default function App() {
                 <StreakTracker owner={owner} repo={repo} />
               </div>
             )}
-
-
 
             {activeTab === 'org' && (
               <div className="grid-single">
@@ -557,11 +655,8 @@ export default function App() {
       )}
 
       <footer className="footer">
-        <span>Backend: {BACKEND_URL}</span>
+        <span>Backend: {BACKEND_URL} · Minimal Black & White Neo-Brutalist Edition</span>
       </footer>
     </div>
   );
 }
-
-
-

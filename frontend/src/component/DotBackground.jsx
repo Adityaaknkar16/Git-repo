@@ -118,16 +118,8 @@ function simplex3D(xin, yin, zin) {
   return 32.0 * (n0 + n1 + n2 + n3);
 }
 
-/**
- * Precomputed 256-entry gradient lookup table (LUT)
- * Dark to light:
- * 0.00: #05030f (near-black)
- * 0.25: #2a1fd6 (deep indigo)
- * 0.50: #6c63ff (electric periwinkle)
- * 0.75: #b9b3f5 (lavender)
- * 1.00: #f5d9ff (pale pink-white)
- */
-const GRADIENT_STOPS = [
+// Color stops for Cyber Dark Theme
+const DARK_GRADIENT_STOPS = [
   { pos: 0.0, r: 5, g: 3, b: 15 },
   { pos: 0.25, r: 42, g: 31, b: 214 },
   { pos: 0.50, r: 108, g: 99, b: 255 },
@@ -135,26 +127,41 @@ const GRADIENT_STOPS = [
   { pos: 1.0, r: 245, g: 217, b: 255 }
 ];
 
-const COLOR_LUT = new Array(256);
-for (let i = 0; i < 256; i++) {
-  const t = i / 255;
-  let s = 0;
-  while (s < GRADIENT_STOPS.length - 2 && t > GRADIENT_STOPS[s + 1].pos) {
-    s++;
+// Color stops for Black & White Neo-Brutalist Theme
+const BW_GRADIENT_STOPS = [
+  { pos: 0.0, r: 255, g: 255, b: 255 },
+  { pos: 0.25, r: 235, g: 235, b: 235 },
+  { pos: 0.50, r: 200, g: 200, b: 200 },
+  { pos: 0.75, r: 140, g: 140, b: 140 },
+  { pos: 1.0, r: 40, g: 40, b: 40 }
+];
+
+function buildLUT(stops) {
+  const lut = new Array(256);
+  for (let i = 0; i < 256; i++) {
+    const t = i / 255;
+    let s = 0;
+    while (s < stops.length - 2 && t > stops[s + 1].pos) {
+      s++;
+    }
+    const stopA = stops[s];
+    const stopB = stops[s + 1];
+    const factor = (t - stopA.pos) / (stopB.pos - stopA.pos);
+    const r = Math.round(stopA.r + (stopB.r - stopA.r) * factor);
+    const g = Math.round(stopA.g + (stopB.g - stopA.g) * factor);
+    const b = Math.round(stopA.b + (stopB.b - stopA.b) * factor);
+    lut[i] = `rgb(${r},${g},${b})`;
   }
-  const stopA = GRADIENT_STOPS[s];
-  const stopB = GRADIENT_STOPS[s + 1];
-  const factor = (t - stopA.pos) / (stopB.pos - stopA.pos);
-  const r = Math.round(stopA.r + (stopB.r - stopA.r) * factor);
-  const g = Math.round(stopA.g + (stopB.g - stopA.g) * factor);
-  const b = Math.round(stopA.b + (stopB.b - stopA.b) * factor);
-  COLOR_LUT[i] = `rgb(${r},${g},${b})`;
+  return lut;
 }
 
-const TWO_PI = Math.PI * 2;
-const LOOP_DURATION = 9.0; // Seconds for seamless loop
+const DARK_COLOR_LUT = buildLUT(DARK_GRADIENT_STOPS);
+const BW_COLOR_LUT = buildLUT(BW_GRADIENT_STOPS);
 
-export default function DotBackground() {
+const TWO_PI = Math.PI * 2;
+const LOOP_DURATION = 9.0;
+
+export default function DotBackground({ theme = 'bw' }) {
   const canvasRef = useRef(null);
 
   useEffect(() => {
@@ -170,7 +177,6 @@ export default function DotBackground() {
     const TARGET_FPS = 30;
     const FRAME_INTERVAL = 1000 / TARGET_FPS;
 
-    // Check prefers-reduced-motion
     const motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
     let prefersReducedMotion = motionQuery.matches;
 
@@ -180,13 +186,15 @@ export default function DotBackground() {
     let baseRadius = 8;
     let dots = [];
 
-    // Rebuild grid & adjust canvas dimensions
+    const isBW = theme === 'bw';
+    const activeLUT = isBW ? BW_COLOR_LUT : DARK_COLOR_LUT;
+
     const setupGrid = () => {
       width = window.innerWidth;
       height = window.innerHeight;
       const isMobile = width < 600;
       pitch = isMobile ? 14 : 20;
-      baseRadius = pitch * 0.40;
+      baseRadius = pitch * 0.38;
 
       const dpr = Math.min(window.devicePixelRatio || 1, 2);
       canvas.width = Math.floor(width * dpr);
@@ -197,7 +205,6 @@ export default function DotBackground() {
       ctx.setTransform(1, 0, 0, 1, 0, 0);
       ctx.scale(dpr, dpr);
 
-      // Precalculate dot grid positions and fade parameters
       dots = [];
       const cols = Math.ceil(width / pitch) + 1;
       const rows = Math.ceil(height / pitch) + 1;
@@ -207,30 +214,25 @@ export default function DotBackground() {
         for (let c = 0; c < cols; c++) {
           const x = c * pitch + pitch * 0.5;
           const nx = x / width;
-          // Right third leans toward calm, flat grayish-lavender
           const fade = nx < 0.6 ? 0 : Math.min(1, (nx - 0.6) / 0.35);
           dots.push({ x, y, nx, fade });
         }
       }
     };
 
-    // Render single frame given timestamp
     const draw = (tSeconds) => {
-      // Loop phase parameter tau in [0, 2*PI]
       const tau = ((tSeconds % LOOP_DURATION) / LOOP_DURATION) * TWO_PI;
       const sinTau = Math.sin(tau);
       const cosTau = Math.cos(tau);
 
       // Fill background
-      ctx.fillStyle = '#05030f';
+      ctx.fillStyle = isBW ? '#ffffff' : '#05030f';
       ctx.fillRect(0, 0, width, height);
 
-      // Octave 1: Large-scale broad color regions drifting diagonally
       const driftX1 = 1.4 * cosTau + 1.2 * sinTau;
       const driftY1 = 1.4 * cosTau - 1.2 * sinTau;
       const driftZ1 = 0.9 * sinTau;
 
-      // Octave 2: Small-scale speckled pixel-art clusters
       const driftX2 = 2.5 * cosTau;
       const driftY2 = 2.5 * sinTau;
       const driftZ2 = 1.5 * cosTau;
@@ -239,79 +241,66 @@ export default function DotBackground() {
       for (let i = 0; i < numDots; i++) {
         const dot = dots[i];
 
-        // Octave 1
         const n1 = simplex3D(
           dot.x * 0.0014 + driftX1,
           dot.y * 0.0014 + driftY1,
           (dot.x + dot.y) * 0.0006 + driftZ1
         );
 
-        // Octave 2
         const n2 = simplex3D(
-          dot.x * 0.008 + driftX2,
-          dot.y * 0.008 + driftY2,
-          (dot.x + dot.y) * 0.003 + driftZ2
+          dot.x * 0.005 + driftX2,
+          dot.y * 0.005 + driftY2,
+          dot.y * 0.003 + driftZ2
         );
 
-        // Combined raw noise roughly in [-1, 1]
-        const raw = 0.72 * n1 + 0.28 * n2;
-        let norm = (raw + 1.0) * 0.5;
-        if (norm < 0) norm = 0;
-        else if (norm > 1) norm = 1;
+        let combined = 0.78 * n1 + 0.22 * n2;
+        let v = Math.min(1.0, Math.max(0.0, (combined + 1.0) * 0.5));
 
-        // Contrast enhancement on left/center
-        // S-curve smoothstep
-        norm = norm * norm * (3 - 2 * norm);
+        if (dot.fade > 0) {
+          const targetV = isBW ? 0.3 : 0.65;
+          v = v * (1.0 - dot.fade * 0.65) + targetV * (dot.fade * 0.65);
+        }
 
-        // Right third fade towards calm grayish-lavender (LUT index ~190, value ~0.75)
-        const targetVal = 0.75;
-        const val = dot.fade > 0 ? norm * (1 - dot.fade * 0.88) + targetVal * (dot.fade * 0.88) : norm;
+        const lutIdx = Math.min(255, Math.max(0, Math.floor(v * 255)));
+        const radius = baseRadius * (0.65 + 0.5 * v);
 
-        // Color lookup (no per-frame string allocation)
-        const colorIdx = (val * 255) | 0;
-        ctx.fillStyle = COLOR_LUT[colorIdx < 0 ? 0 : colorIdx > 255 ? 255 : colorIdx];
-
-        // Radius slightly varies with noise (darker = smaller, brighter = fuller)
-        const radius = baseRadius * (0.68 + 0.32 * val);
-
+        ctx.fillStyle = activeLUT[lutIdx];
         ctx.beginPath();
         ctx.arc(dot.x, dot.y, radius, 0, TWO_PI);
         ctx.fill();
       }
     };
 
-    // Animation loop capped at 30 FPS
-    const tick = (now) => {
-      animationFrameId = requestAnimationFrame(tick);
-      const delta = now - lastFrameTime;
-      if (delta < FRAME_INTERVAL) return;
-
-      lastFrameTime = now - (delta % FRAME_INTERVAL);
-      const elapsedSeconds = (now - startTime) / 1000;
-      draw(elapsedSeconds);
-    };
-
-    // Setup initial grid
     setupGrid();
 
     if (prefersReducedMotion) {
       draw(0);
-    } else {
-      animationFrameId = requestAnimationFrame(tick);
+      return;
     }
 
-    // Debounced window resize
+    const tick = (now) => {
+      const elapsed = now - lastFrameTime;
+      if (elapsed >= FRAME_INTERVAL) {
+        lastFrameTime = now - (elapsed % FRAME_INTERVAL);
+        const tSeconds = (now - startTime) * 0.001;
+        draw(tSeconds);
+      }
+      animationFrameId = requestAnimationFrame(tick);
+    };
+
+    animationFrameId = requestAnimationFrame(tick);
+
     const handleResize = () => {
       clearTimeout(resizeTimeout);
       resizeTimeout = setTimeout(() => {
         setupGrid();
-        const elapsedSeconds = (performance.now() - startTime) / 1000;
-        draw(prefersReducedMotion ? 0 : elapsedSeconds);
-      }, 150);
+        if (prefersReducedMotion) {
+          draw(0);
+        }
+      }, 100);
     };
-    window.addEventListener('resize', handleResize);
+    window.addEventListener('resize', handleResize, { passive: true });
 
-    // Pause on document.hidden
     const handleVisibilityChange = () => {
       if (document.hidden) {
         if (animationFrameId) {
@@ -327,38 +316,18 @@ export default function DotBackground() {
     };
     document.addEventListener('visibilitychange', handleVisibilityChange);
 
-    // Handle motion preference changes dynamically
-    const handleMotionChange = (e) => {
-      prefersReducedMotion = e.matches;
-      if (prefersReducedMotion) {
-        if (animationFrameId) {
-          cancelAnimationFrame(animationFrameId);
-          animationFrameId = null;
-        }
-        draw(0);
-      } else {
-        if (!animationFrameId) {
-          lastFrameTime = performance.now();
-          animationFrameId = requestAnimationFrame(tick);
-        }
-      }
-    };
-    motionQuery.addEventListener('change', handleMotionChange);
-
-    // Cleanup on unmount
     return () => {
       if (animationFrameId) cancelAnimationFrame(animationFrameId);
       clearTimeout(resizeTimeout);
       window.removeEventListener('resize', handleResize);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
-      motionQuery.removeEventListener('change', handleMotionChange);
     };
-  }, []);
+  }, [theme]);
 
   return (
-    <div className="dot-bg-container" aria-hidden="true">
+    <div className={`dot-bg-container ${theme}`} aria-hidden="true">
       <canvas ref={canvasRef} className="dot-bg-canvas" />
-      <div className="dot-bg-overlay" />
+      <div className={`dot-bg-overlay ${theme}`} />
     </div>
   );
 }

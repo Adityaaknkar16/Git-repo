@@ -1,13 +1,13 @@
 :root {
-  --bg: #05030f;
-  --panel: rgba(15, 12, 35, 0.75);
-  --text: #f3f3f6;
-  --muted: #8e90a6;
-  --accent: #5856d6;
-  --accent-glow: rgba(88, 86, 214, 0.35);
-  --border: rgba(255, 255, 255, 0.08);
-  --gradient: linear-gradient(135deg, #5856d6, #c644fc);
-  --bg-overlay-opacity: 0.72;
+  --bg: #ffffff;
+  --panel: #ffffff;
+  --text: #000000;
+  --muted: #52525b;
+  --accent: #000000;
+  --accent-glow: rgba(0, 0, 0, 0.15);
+  --border: #000000;
+  --gradient: linear-gradient(135deg, #000000, #18181b);
+  --bg-overlay-opacity: 0.15;
 }
 
 * {
@@ -20,9 +20,9 @@ html, body, #root {
 
 body {
   margin: 0;
-  background: #05030f;
-  color: var(--text);
-  font-family: 'Outfit', 'Inter', system-ui, -apple-system, sans-serif;
+  background: #ffffff;
+  color: #000000;
+  font-family: 'Space Mono', 'Courier New', monospace, -apple-system, sans-serif;
   -webkit-font-smoothing: antialiased;
 }
 
@@ -1317,4 +1317,366 @@ pre, code {
 .generate-guide-btn:hover {
   transform: translateY(-2px);
 }
+
+/* ==========================================================================
+   BLACK & WHITE NEO-BRUTALIST THEME (MINECRAFT EDITION)
+   Matches the stark, high-contrast monochrome UI in the reference image
+   ========================================================================== */
+
+.theme-bw {
+  --bg: #ffffff;
+  --panel: #ffffff;
+  --text: #000000;
+  --muted: #52525b;
+  --accent: #000000;
+  --accent-glow: rgba(0, 0, 0, 0.12);
+  --border: #000000;
+  --gradient: linear-gradient(135deg, #000000, #18181b);
+  --bg-overlay-opacity: 0.15;
+  background-color: #ffffff !important;
+  color: #000000 !important;
+  font-family: 'Space Mono', 'Courier New', monospace, sans-serif !important;
+}
+
+.theme-bw .dot-bg-overlay {
+  background: rgba(255, 255, 255, 0.65) !important;
+}
+
+.theme-bw .header {
+  background: #ffffff !important;
+  border-bottom: 2px solid #000000 !important;
+  box-shadow: 0 4px 0px rgba(0, 0, 0, 0.06);
+  padding: 16px 24px;
+}
+
+.theme-bw .header h1 {
+  color: #000000 !important;
+  font-family: 'Space Mono', monospace !important;
+  font-weight: 700 !important;
+  font-size: 22px !important;
+  background: none !important;
+  -webkit-text-fill-color: #000000 !important;
+  letter-spacing: -0.5px !important;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.theme-bw .subtitle-bw {
+  font-family: 'Space Mono', monospace;
+  font-size: 11px;
+  color: #71717a;
+  margin-top: 2px;
+}
+
+.theme-bw .stats-badge-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-family: 'Space Mono', monospace;
+  font-size: 11px;
+  color: #000000;
+}
+
+.theme-bw .stats-badge-row .stat-pill {
+  border: 1.5px solid #000000;
+  padding: 3px 8px;
+  background: #ffffff;
+  box-shadow: 2px 2px 0px #000000;
+  font-weight: 700;
+}
+
+.theme-bw .input-row {
+  display: flex;
+  gap: 12px;
+}
+
+.theme-bw .input-row input {
+  background: #ffffff !important;
+  color: #000000 !important;
+  border: 2px solid #000000 !important;
+  border-radius: 0px !important;
+  box-shadow: 2px 2px 0px #000000 !important;
+  font-family: 'Space Mono', monospace !important;
+  font-size: 13px !important;
+  padding: 10px 14px !important;
+}
+
+.theme-bw .input-row input:focus {
+  outline: none;
+  border-color: #000000 !important;
+  box-shadow: 4px 4px 0px #000000 !important;
+}
+
+.theme-bw .input-row input::placeholder {
+  color: #a1a1aa !important;
+}
+
+.theme-bw .input-row button[type="submit"] {
+  background: #000000 !important;
+  color: #ffffff !important;
+  border: 2px solid #000000 !important;
+  border-radius: 0px !important;
+  box-shadow: 3px 3px 0px #000000 !important;
+  font-family: 'Space Mono', monospace !important;
+  font-weight: 700 !important;
+  font-size: 12px !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.5px !important;
+  padding: 10px 24px !important;
+  cursor: pointer;
+  transition: transform 0.1s ease, box-shadow 0.1s ease, background 0.1s ease, color 0.1s ease;
+}
+
+.theme-bw .input-row button[type="submit"]:hover {
+  background: #ffffff !important;
+  color: #000000 !important;
+  transform: translate(-1px, -1px);
+  box-shadow: 4px 4px 0px #000000 !important;
+}
+
+.theme-bw .demo-btn,
+.theme-bw .theme-toggle-btn {
+  background: #ffffff !important;
+  color: #000000 !important;
+  border: 2px solid #000000 !important;
+  border-radius: 0px !important;
+  box-shadow: 2px 2px 0px #000000 !important;
+  font-family: 'Space Mono', monospace !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  padding: 8px 14px !important;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: transform 0.1s ease, box-shadow 0.1s ease;
+}
+
+.theme-bw .demo-btn:hover,
+.theme-bw .theme-toggle-btn:hover {
+  background: #000000 !important;
+  color: #ffffff !important;
+  transform: translate(-1px, -1px);
+  box-shadow: 3px 3px 0px #000000 !important;
+}
+
+.theme-bw .toolbar-action-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 10px 0 0 0;
+  flex-wrap: wrap;
+}
+
+.theme-bw .action-btn-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.theme-bw .toolbar-btn {
+  background: #ffffff !important;
+  color: #000000 !important;
+  border: 1.5px solid #000000 !important;
+  padding: 6px 12px !important;
+  font-family: 'Space Mono', monospace !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  cursor: pointer;
+  box-shadow: 2px 2px 0px #000000 !important;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: 0px !important;
+}
+
+.theme-bw .toolbar-btn:hover {
+  background: #000000 !important;
+  color: #ffffff !important;
+}
+
+.theme-bw .toolbar-btn.danger {
+  color: #e11d48 !important;
+}
+
+.theme-bw .toolbar-btn.danger:hover {
+  background: #e11d48 !important;
+  color: #ffffff !important;
+  border-color: #e11d48 !important;
+}
+
+.theme-bw .sidebar {
+  background: #ffffff !important;
+  border: 2px solid #000000 !important;
+  box-shadow: 4px 4px 0px #000000 !important;
+  border-radius: 0px !important;
+  padding: 14px 10px !important;
+}
+
+.theme-bw .sidebar-groups-header {
+  font-family: 'Space Mono', monospace;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: #000000;
+  padding: 4px 8px 10px 8px;
+  border-bottom: 1.5px solid #000000;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.theme-bw .tab-btn {
+  background: #ffffff !important;
+  color: #000000 !important;
+  border: 1.5px solid #000000 !important;
+  border-radius: 0px !important;
+  box-shadow: 2px 2px 0px #000000 !important;
+  font-family: 'Space Mono', monospace !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  padding: 9px 12px !important;
+  margin-bottom: 6px !important;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.1s ease;
+}
+
+.theme-bw .tab-btn:hover {
+  background: #f4f4f5 !important;
+  transform: translate(-1px, -1px);
+  box-shadow: 3px 3px 0px #000000 !important;
+}
+
+.theme-bw .tab-btn.active {
+  background: #000000 !important;
+  color: #ffffff !important;
+  border-color: #000000 !important;
+  box-shadow: 3px 3px 0px #000000 !important;
+  font-weight: 700 !important;
+}
+
+.theme-bw .tab-btn.active svg {
+  stroke: #ffffff !important;
+}
+
+.theme-bw .card,
+.theme-bw .glass-panel {
+  background: #ffffff !important;
+  color: #000000 !important;
+  border: 2px solid #000000 !important;
+  box-shadow: 4px 4px 0px #000000 !important;
+  border-radius: 0px !important;
+  backdrop-filter: none !important;
+}
+
+.theme-bw .card h2,
+.theme-bw .card h3 {
+  color: #000000 !important;
+  font-family: 'Space Mono', monospace !important;
+  border-bottom: 2px solid #000000 !important;
+  padding-bottom: 8px !important;
+  margin-bottom: 16px !important;
+  letter-spacing: -0.5px !important;
+}
+
+.theme-bw .meta {
+  background: #ffffff !important;
+  border: 1.5px solid #000000 !important;
+  box-shadow: 2px 2px 0px #000000 !important;
+  border-radius: 0px !important;
+  padding: 8px 12px !important;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.theme-bw .meta .repo-name {
+  color: #000000 !important;
+  font-family: 'Space Mono', monospace !important;
+  font-weight: 700 !important;
+  font-size: 13px !important;
+}
+
+.theme-bw .meta .badge {
+  background: #000000 !important;
+  color: #ffffff !important;
+  border: 1px solid #000000 !important;
+  font-family: 'Space Mono', monospace !important;
+  font-size: 10px !important;
+  border-radius: 0px !important;
+  padding: 2px 6px !important;
+}
+
+.theme-bw .export-btn {
+  background: #ffffff !important;
+  color: #000000 !important;
+  border: 1.5px solid #000000 !important;
+  box-shadow: 2px 2px 0px #000000 !important;
+  font-family: 'Space Mono', monospace !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  border-radius: 0px !important;
+  padding: 4px 10px !important;
+  cursor: pointer;
+}
+
+.theme-bw .export-btn:hover {
+  background: #000000 !important;
+  color: #ffffff !important;
+}
+
+.theme-bw .author-stat-card,
+.theme-bw .issue-card,
+.theme-bw .pr-card,
+.theme-bw .hotspot-card,
+.theme-bw .persona-card,
+.theme-bw .metric-score-card {
+  background: #ffffff !important;
+  color: #000000 !important;
+  border: 1.5px solid #000000 !important;
+  box-shadow: 3px 3px 0px #000000 !important;
+  border-radius: 0px !important;
+}
+
+.theme-bw .author-stat-card h4,
+.theme-bw .pr-title,
+.theme-bw .file-path,
+.theme-bw .persona-name {
+  color: #000000 !important;
+  font-family: 'Space Mono', monospace !important;
+}
+
+.theme-bw .heatmap-container {
+  background: #ffffff !important;
+  border: 1.5px solid #000000 !important;
+  box-shadow: 3px 3px 0px #000000 !important;
+  border-radius: 0px !important;
+  color: #000000 !important;
+}
+
+.theme-bw .heatmap-container h4 {
+  color: #000000 !important;
+  font-family: 'Space Mono', monospace !important;
+}
+
+.theme-bw .branch-name {
+  background: #ffffff !important;
+  color: #000000 !important;
+  border: 1px solid #000000 !important;
+  border-radius: 0px !important;
+}
+
+.theme-bw .commit-sha {
+  background: #000000 !important;
+  color: #ffffff !important;
+  border-radius: 0px !important;
+}
+
 
