@@ -94,13 +94,14 @@ export default function TimelinePlayback({ commits, onFilteredCommitsChange }) {
 
       <style>{`
         .timeline-playback-container {
-          padding: 12px 16px;
-          background: #17171e;
-          border: 1px solid var(--border);
-          border-radius: 8px;
+          padding: 14px 18px;
+          background: #ffffff;
+          border: 2px solid #000000;
+          box-shadow: 3px 3px 0px #000000;
+          border-radius: 4px;
           display: flex;
           flex-direction: column;
-          gap: 10px;
+          gap: 12px;
         }
         .playback-controls {
           display: flex;
@@ -109,21 +110,27 @@ export default function TimelinePlayback({ commits, onFilteredCommitsChange }) {
           flex-wrap: wrap;
         }
         .control-btn {
-          width: 32px;
-          height: 32px;
+          width: 36px;
+          height: 36px;
           display: flex;
           align-items: center;
           justify-content: center;
-          background: #23232b;
-          border: 1px solid var(--border);
-          border-radius: 50%;
-          color: var(--text);
+          background: #ffffff;
+          border: 2px solid #000000;
+          box-shadow: 2px 2px 0px #000000;
+          border-radius: 4px;
+          color: #000000;
           cursor: pointer;
-          transition: background 0.2s;
+          transition: transform 0.1s ease, background 0.1s ease;
         }
         .control-btn:hover {
-          background: var(--accent);
-          color: white;
+          background: #000000;
+          color: #ffffff;
+          transform: translate(-1px, -1px);
+        }
+        .control-btn:active {
+          transform: translate(1px, 1px);
+          box-shadow: 1px 1px 0px #000000;
         }
         .slider-wrapper {
           flex: 1;
@@ -134,59 +141,86 @@ export default function TimelinePlayback({ commits, onFilteredCommitsChange }) {
         .timeline-slider {
           width: 100%;
           -webkit-appearance: none;
-          height: 4px;
-          border-radius: 2px;
-          background: #2b2b36;
+          height: 8px;
+          border-radius: 4px;
+          background: #e0e0e0;
+          border: 1px solid #000000;
           outline: none;
         }
         .timeline-slider::-webkit-slider-thumb {
           -webkit-appearance: none;
           appearance: none;
-          width: 12px;
-          height: 12px;
+          width: 18px;
+          height: 18px;
           border-radius: 50%;
-          background: var(--accent);
+          background: #000000;
+          border: 2px solid #000000;
           cursor: pointer;
+          box-shadow: 1px 1px 0px #000000;
         }
         .speed-selector {
           display: flex;
           align-items: center;
-          gap: 4px;
-          font-size: 11px;
-          color: var(--muted);
+          gap: 6px;
+          font-size: 12px;
+          font-weight: 700;
+          color: #000000;
+        }
+        .speed-selector .icon {
+          color: #000000;
         }
         .speed-selector select {
-          padding: 4px 8px;
-          border-radius: 6px;
-          background: #23232b;
-          border: 1px solid var(--border);
-          color: var(--text);
+          padding: 6px 12px;
+          border-radius: 4px;
+          background: #ffffff;
+          border: 2px solid #000000;
+          box-shadow: 2px 2px 0px #000000;
+          color: #000000;
+          font-family: monospace;
+          font-size: 13px;
+          font-weight: 700;
+          cursor: pointer;
+          outline: none;
         }
         .current-playback-status {
           display: flex;
           align-items: center;
-          gap: 10px;
-          font-size: 11px;
-          background: #0f0f13;
-          padding: 6px 10px;
-          border-radius: 6px;
-          border: 1px solid var(--border);
+          gap: 12px;
+          font-size: 13px;
+          background: #ffffff;
+          padding: 8px 14px;
+          border-radius: 4px;
+          border: 2px solid #000000;
+          box-shadow: 2px 2px 0px #000000;
           overflow: hidden;
         }
         .date-tag {
-          color: #39d353;
-          font-weight: 600;
+          color: #ffffff;
+          background: #000000;
+          font-family: monospace;
+          font-weight: 800;
+          font-size: 12px;
+          padding: 2px 8px;
+          border-radius: 2px;
           flex-shrink: 0;
+          letter-spacing: 0.5px;
         }
         .sha-tag {
           font-family: monospace;
-          background: #23232b;
-          padding: 1px 4px;
-          border-radius: 4px;
+          background: #f0f0f0;
+          color: #000000;
+          border: 1px solid #000000;
+          padding: 2px 8px;
+          border-radius: 2px;
+          font-weight: 800;
+          font-size: 12px;
           flex-shrink: 0;
         }
         .msg-tag {
-          color: var(--muted);
+          color: #000000;
+          font-weight: 700;
+          font-family: monospace;
+          font-size: 13px;
           white-space: nowrap;
           overflow: hidden;
           text-overflow: ellipsis;

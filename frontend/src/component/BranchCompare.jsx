@@ -129,9 +129,10 @@ export default function BranchCompare({ repoUrl, branches }) {
         }
         .compare-selector {
           padding: 16px;
-          background: #17171e;
-          border: 1px solid var(--border);
-          border-radius: 8px;
+          background: #ffffff;
+          border: 2px solid #000000;
+          box-shadow: 3px 3px 0px #000000;
+          border-radius: 4px;
           display: flex;
           flex-direction: column;
           gap: 14px;
@@ -148,32 +149,49 @@ export default function BranchCompare({ repoUrl, branches }) {
           gap: 6px;
         }
         .select-group label {
-          font-size: 12px;
-          color: var(--muted);
+          font-size: 13px;
+          font-weight: 700;
+          color: #000000;
         }
         .select-group select {
           padding: 8px 12px;
-          border-radius: 8px;
-          border: 1px solid var(--border);
-          background: #23232b;
-          color: var(--text);
+          border-radius: 4px;
+          border: 2px solid #000000;
+          background: #ffffff;
+          color: #000000;
+          font-family: monospace;
+          font-weight: 700;
+          box-shadow: 2px 2px 0px #000000;
+          outline: none;
         }
         .compare-divider {
           display: flex;
           align-items: center;
           justify-content: center;
           margin-top: 18px;
-          color: var(--accent);
+          color: #000000;
         }
         .compare-btn {
           width: 100%;
-          padding: 10px;
-          background: var(--accent);
-          border: none;
-          color: white;
-          border-radius: 8px;
-          font-weight: 600;
+          padding: 12px;
+          background: #000000;
+          border: 2px solid #000000;
+          box-shadow: 3px 3px 0px #000000;
+          color: #ffffff;
+          border-radius: 4px;
+          font-weight: 800;
+          font-family: monospace;
+          font-size: 14px;
           cursor: pointer;
+          transition: transform 0.1s ease;
+        }
+        .compare-btn:hover {
+          transform: translate(-1px, -1px);
+          box-shadow: 4px 4px 0px #000000;
+        }
+        .compare-btn:active {
+          transform: translate(1px, 1px);
+          box-shadow: 1px 1px 0px #000000;
         }
         .summary-cards {
           display: grid;
@@ -182,54 +200,62 @@ export default function BranchCompare({ repoUrl, branches }) {
         }
         .summary-card {
           padding: 14px;
-          background: #17171e;
-          border: 1px solid var(--border);
-          border-radius: 8px;
+          background: #ffffff;
+          border: 2px solid #000000;
+          box-shadow: 2px 2px 0px #000000;
+          border-radius: 4px;
           text-align: center;
         }
         .summary-card h4 {
           margin: 0 0 8px;
           font-size: 13px;
-          color: var(--muted);
+          font-weight: 700;
+          color: #000000;
         }
         .summary-card .count {
-          font-size: 18px;
-          font-weight: 600;
+          font-size: 22px;
+          font-weight: 800;
+          font-family: monospace;
+          color: #000000;
         }
-        .summary-card .count.positive { color: #39d353; }
-        .summary-card .count.negative { color: #ff5555; }
+        .summary-card .count.positive { color: #000000; }
+        .summary-card .count.negative { color: #000000; }
         .alert-box {
           display: flex;
           gap: 12px;
           padding: 14px;
-          border-radius: 8px;
-          border: 1px solid var(--border);
+          border-radius: 4px;
+          border: 2px solid #000000;
+          box-shadow: 2px 2px 0px #000000;
+          background: #ffffff;
+          color: #000000;
         }
         .alert-box.warning {
-          background: rgba(255, 120, 0, 0.08);
-          border-color: rgba(255, 120, 0, 0.3);
+          background: #ffffff;
+          border: 2px solid #000000;
         }
-        .alert-box.warning h4 { color: #ff9f1c; margin: 0 0 6px; }
-        .alert-box.warning ul { margin: 0; padding-left: 18px; font-size: 12px; color: var(--text); }
+        .alert-box.warning h4 { color: #000000; margin: 0 0 6px; font-weight: 800; }
+        .alert-box.warning ul { margin: 0; padding-left: 18px; font-size: 13px; font-weight: 600; color: #000000; }
         .alert-box.success {
-          background: rgba(0, 229, 117, 0.08);
-          border-color: rgba(0, 229, 117, 0.3);
+          background: #ffffff;
+          border: 2px solid #000000;
         }
-        .alert-box.success h4 { color: #00e575; margin: 0 0 4px; }
-        .alert-box.success p { margin: 0; font-size: 12px; color: var(--muted); }
-        .alert-icon { flex-shrink: 0; margin-top: 2px; }
+        .alert-box.success h4 { color: #000000; margin: 0 0 4px; font-weight: 800; }
+        .alert-box.success p { margin: 0; font-size: 13px; font-weight: 600; color: #333333; }
+        .alert-icon { flex-shrink: 0; margin-top: 2px; color: #000000; }
         .diff-viewer {
           padding: 16px;
-          background: #17171e;
-          border: 1px solid var(--border);
-          border-radius: 8px;
+          background: #ffffff;
+          border: 2px solid #000000;
+          box-shadow: 3px 3px 0px #000000;
+          border-radius: 4px;
         }
-        .diff-viewer h3 { margin: 0 0 12px; font-size: 14px; }
+        .diff-viewer h3 { margin: 0 0 12px; font-size: 14px; font-weight: 800; color: #000000; }
         .file-diff-list { display: flex; flex-direction: column; gap: 8px; }
         .file-diff-item {
-          background: #23232b;
-          border: 1px solid var(--border);
-          border-radius: 6px;
+          background: #ffffff;
+          border: 2px solid #000000;
+          border-radius: 4px;
           overflow: hidden;
         }
         .file-header {
@@ -240,23 +266,28 @@ export default function BranchCompare({ repoUrl, branches }) {
           justify-content: space-between;
           align-items: center;
           user-select: none;
+          background: #f7f7f7;
+          border-bottom: 1px solid #000000;
+          color: #000000;
+          font-weight: 700;
         }
-        .filename { font-family: monospace; }
-        .changes-indicator { font-size: 11px; display: flex; gap: 6px; }
-        .changes-indicator .additions { color: #39d353; }
-        .changes-indicator .deletions { color: #ff5555; }
+        .filename { font-family: monospace; font-weight: 800; }
+        .changes-indicator { font-size: 11px; font-family: monospace; font-weight: 800; display: flex; gap: 6px; }
+        .changes-indicator .additions { color: #000000; }
+        .changes-indicator .deletions { color: #555555; }
         .patch-code {
           margin: 0;
-          padding: 12px;
-          background: #0f0f12;
+          padding: 14px;
+          background: #fafafa;
           overflow-x: auto;
           font-family: monospace;
-          font-size: 11px;
-          border-top: 1px solid var(--border);
-          color: #a0a0a0;
+          font-size: 12px;
+          font-weight: 600;
+          color: #000000;
           white-space: pre-wrap;
+          line-height: 1.5;
         }
-        .no-patch { padding: 12px; font-size: 12px; color: var(--muted); margin: 0; }
+        .no-patch { padding: 14px; font-size: 13px; font-weight: 700; color: #555555; margin: 0; }
         @media (max-width: 600px) {
           .select-row {
             flex-direction: column;

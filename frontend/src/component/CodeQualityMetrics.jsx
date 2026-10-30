@@ -32,7 +32,7 @@ export default function CodeQualityMetrics() {
       {
         data: [4, 18, 78],
         backgroundColor: ['#ff4747', '#ffaa00', '#00e575'],
-        borderColor: '#17171e',
+        borderColor: '#ffffff',
         borderWidth: 2,
       },
     ],
@@ -45,8 +45,8 @@ export default function CodeQualityMetrics() {
       legend: { display: false },
     },
     scales: {
-      y: { grid: { color: '#26262b' }, ticks: { color: '#a0a0a0' } },
-      x: { grid: { color: '#26262b' }, ticks: { color: '#a0a0a0' } },
+      y: { grid: { color: '#e0e0e0' }, ticks: { color: '#000000', font: { family: 'monospace', weight: 'bold' } } },
+      x: { grid: { color: '#e0e0e0' }, ticks: { color: '#000000', font: { family: 'monospace', weight: 'bold' } } },
     },
   };
 
@@ -97,30 +97,34 @@ export default function CodeQualityMetrics() {
         }
         .metric-score-card {
           padding: 14px;
-          background: #17171e;
-          border: 1px solid var(--border);
-          border-radius: 8px;
+          background: #ffffff;
+          border: 2px solid #000000;
+          box-shadow: 2px 2px 0px #000000;
+          border-radius: 4px;
           display: flex;
           align-items: center;
           gap: 12px;
         }
         .score-icon {
-          color: var(--accent);
+          color: #000000;
         }
         .score-icon.secure {
-          color: #00e575;
+          color: #000000;
         }
         .score-details {
           display: flex;
           flex-direction: column;
         }
         .score-details .label {
-          font-size: 11px;
-          color: var(--muted);
+          font-size: 12px;
+          font-weight: 700;
+          color: #555555;
         }
         .score-details .value {
-          font-size: 18px;
-          font-weight: 600;
+          font-size: 20px;
+          font-weight: 800;
+          font-family: monospace;
+          color: #000000;
         }
         .charts-grid {
           display: grid;
@@ -129,16 +133,19 @@ export default function CodeQualityMetrics() {
         }
         .chart-card {
           padding: 14px;
-          background: #17171e;
-          border: 1px solid var(--border);
-          border-radius: 8px;
+          background: #ffffff;
+          border: 2px solid #000000;
+          box-shadow: 3px 3px 0px #000000;
+          border-radius: 4px;
           display: flex;
           flex-direction: column;
           gap: 10px;
         }
         .chart-card h4 {
           margin: 0;
-          font-size: 13px;
+          font-size: 14px;
+          font-weight: 800;
+          color: #000000;
         }
         .chart-wrapper {
           height: 180px;

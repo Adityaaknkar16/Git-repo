@@ -67,27 +67,29 @@ export default function CollaborationMap({ contributors }) {
           gap: 12px;
         }
         .summary-header {
-          padding: 12px 14px;
-          background: #17171e;
-          border: 1px solid var(--border);
-          border-radius: 8px;
+          padding: 12px 16px;
+          background: #ffffff;
+          border: 2px solid #000000;
+          box-shadow: 2px 2px 0px #000000;
+          border-radius: 4px;
           display: flex;
           align-items: center;
           gap: 10px;
         }
-        .summary-header h4 { margin: 0; font-size: 13px; }
-        .summary-header .subtitle { margin: 2px 0 0; font-size: 11px; color: var(--muted); }
-        .summary-header .icon { color: var(--accent); }
+        .summary-header h4 { margin: 0; font-size: 14px; font-weight: 800; color: #000000; }
+        .summary-header .subtitle { margin: 2px 0 0; font-size: 12px; font-weight: 600; color: #555555; }
+        .summary-header .icon { color: #000000; }
         .interactions-list {
           display: flex;
           flex-direction: column;
           gap: 10px;
         }
         .interaction-card {
-          padding: 12px;
-          background: #17171e;
-          border: 1px solid var(--border);
-          border-radius: 8px;
+          padding: 12px 16px;
+          background: #ffffff;
+          border: 2px solid #000000;
+          box-shadow: 2px 2px 0px #000000;
+          border-radius: 4px;
           display: flex;
           justify-content: space-between;
           align-items: center;
@@ -105,16 +107,20 @@ export default function CollaborationMap({ contributors }) {
           gap: 6px;
         }
         .user-profile .avatar {
-          width: 24px;
-          height: 24px;
+          width: 26px;
+          height: 26px;
           border-radius: 50%;
+          border: 1px solid #000000;
         }
         .user-profile .name {
-          font-size: 12px;
-          font-weight: 500;
+          font-size: 13px;
+          font-weight: 700;
+          color: #000000;
+          font-family: monospace;
         }
         .flow-arrow {
-          color: var(--muted);
+          color: #000000;
+          font-weight: 800;
         }
         .stat-badges {
           display: flex;
@@ -122,18 +128,21 @@ export default function CollaborationMap({ contributors }) {
         }
         .badge {
           font-size: 11px;
-          background: #23232b;
-          border: 1px solid var(--border);
+          background: #f0f0f0;
+          border: 1px solid #000000;
           padding: 3px 8px;
-          border-radius: 6px;
-          color: var(--muted);
+          border-radius: 2px;
+          color: #000000;
+          font-weight: 700;
+          font-family: monospace;
           display: flex;
           align-items: center;
           gap: 4px;
         }
         .no-data {
           font-size: 13px;
-          color: var(--muted);
+          font-weight: 700;
+          color: #000000;
           text-align: center;
           padding: 20px 0;
         }

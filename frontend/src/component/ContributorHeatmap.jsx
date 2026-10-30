@@ -93,10 +93,11 @@ export default function ContributorHeatmap({ contributors = [], commitHistory = 
           gap: 12px;
         }
         .author-stat-card {
-          padding: 12px;
-          border-radius: 8px;
-          border: 1px solid var(--border);
-          background: #17171e;
+          padding: 14px;
+          border-radius: 4px;
+          border: 2px solid #000000;
+          box-shadow: 2px 2px 0px #000000;
+          background: #ffffff;
         }
         .header-info {
           display: flex;
@@ -108,11 +109,13 @@ export default function ContributorHeatmap({ contributors = [], commitHistory = 
           width: 32px;
           height: 32px;
           border-radius: 50%;
-          border: 1px solid var(--accent);
+          border: 1px solid #000000;
         }
         .header-info h4 {
           margin: 0;
-          font-size: 13px;
+          font-size: 14px;
+          font-weight: 800;
+          color: #000000;
         }
         .stats-data {
           display: flex;
@@ -124,23 +127,29 @@ export default function ContributorHeatmap({ contributors = [], commitHistory = 
           display: flex;
           align-items: center;
           gap: 6px;
-          color: var(--muted);
+          color: #333333;
+          font-weight: 600;
         }
         .stat-item.positive {
-          color: #39d353;
+          color: #000000;
+          font-weight: 700;
         }
         .stat-item.negative {
-          color: #ff5555;
+          color: #555555;
+          font-weight: 700;
         }
         .heatmap-container {
           padding: 14px;
-          background: #17171e;
-          border: 1px solid var(--border);
-          border-radius: 8px;
+          background: #ffffff;
+          border: 2px solid #000000;
+          box-shadow: 3px 3px 0px #000000;
+          border-radius: 4px;
         }
         .heatmap-container h4 {
           margin: 0 0 10px;
-          font-size: 13px;
+          font-size: 14px;
+          font-weight: 800;
+          color: #000000;
         }
         .heatmap-grid {
           display: flex;
