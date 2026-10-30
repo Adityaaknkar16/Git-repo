@@ -472,7 +472,7 @@ export default function App() {
           <div>
             <h1>
               <Box size={22} style={{ flexShrink: 0 }} />
-              Git Repository Visualizer
+              <div className="fx-marker">Git Repository Visualizer</div>
             </h1>
             <div className="subtitle-bw">Minimal Black/White Developer Dashboard · Minecraft Edition</div>
           </div>
@@ -541,10 +541,7 @@ export default function App() {
                 <MinecraftHealthBar score={88} />
               </>
             ) : (
-              <>
-                <span className="stat-pill">Status: Ready</span>
-                <span className="stat-pill">Theme: Monochrome B&W</span>
-              </>
+              <span className="stat-pill">Status: Ready</span>
             )}
           </div>
         </div>
@@ -638,8 +635,8 @@ export default function App() {
                   <CommitActivityChart activity={data.commitActivity} />
                 </section>
                 <section className="card wide">
-                  <h2>File Tree Structure</h2>
-                  <FileTree files={data.fileTree} />
+                  <h2>Repository Directory Graph & File Structure</h2>
+                  <FileTree files={data.fileTree} repoName={data.repoInfo?.repo || 'repository'} />
                 </section>
                 <section className="card wide">
                   <WeeklyDigest repoUrl={repoUrl} />
@@ -668,8 +665,8 @@ export default function App() {
             {activeTab === 'commits' && (
               <div className="grid-single">
                 <section className="card">
-                  <h2>Interactive Commit Network Graph</h2>
-                  <CommitGraph commits={data.commitHistory} defaultBranch={data.repoInfo?.defaultBranch || 'main'} />
+                  <h2>Interactive Git Directed Graph (DAG)</h2>
+                  <CommitGraph commits={data.commitHistory} defaultBranch={data.repoInfo?.defaultBranch || 'main'} repoUrl={repoUrl} />
                 </section>
               </div>
             )}
@@ -682,7 +679,7 @@ export default function App() {
                 </section>
                 <section className="card">
                   <h2>Historical Commit Evolution</h2>
-                  <CommitGraph commits={timelineCommits} defaultBranch={data.repoInfo?.defaultBranch || 'main'} />
+                  <CommitGraph commits={timelineCommits} defaultBranch={data.repoInfo?.defaultBranch || 'main'} repoUrl={repoUrl} />
                 </section>
               </div>
             )}
@@ -905,7 +902,9 @@ export default function App() {
       )}
 
       <footer className="footer">
-        <span>Backend: {BACKEND_URL} · Minimal Black & White Neo-Brutalist Edition</span>
+        <span>
+          Made with <span className="footer-heart" role="img" aria-label="love">❤️</span> by <a href="mailto:adityaakankar@gmail.com" className="footer-link">adityaakankar@gmail.com</a>
+        </span>
       </footer>
 
       {/* Black & White Neo-Brutalist Themed Alert Modal */}

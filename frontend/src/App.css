@@ -8,6 +8,12 @@
   --border: #000000;
   --gradient: linear-gradient(135deg, #000000, #18181b);
   --bg-overlay-opacity: 0.15;
+  /* Colour tokens — override to re-skin the effect:
+     --ink    main text colour (defaults to currentColor)
+     --ink-2  primary accent   --ink-3  secondary accent */
+  --ink: currentColor;
+  --ink-2: #FF4FD8;
+  --ink-3: #4FF8FF;
 }
 
 * {
@@ -73,7 +79,7 @@ body {
   display: flex;
   flex-direction: column;
   gap: 14px;
-  background: rgba(15, 12, 35, 0.82);
+  background: #ffffff;
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   position: sticky;
@@ -211,7 +217,7 @@ body {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  background: rgba(15, 12, 35, 0.65);
+  background: #ffffff;
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   flex-shrink: 0;
@@ -412,14 +418,22 @@ body {
 /* Footer styling */
 .footer {
   padding: 16px 24px;
-  border-top: 1px solid var(--border);
-  color: var(--muted);
-  font-size: 12px;
-  background: rgba(15, 12, 35, 0.75);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  border-top: 2px solid #000000;
+  color: #000000;
+  font-family: 'Space Mono', monospace;
+  font-size: 13px;
+  font-weight: 700;
+  background: #ffffff;
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  z-index: 10;
+}
+
+.footer span {
+  color: #000000;
+  font-weight: 700;
 }
 
 /* ==========================================================
@@ -454,7 +468,7 @@ pre, code {
     gap: 6px;
     scrollbar-width: thin;
     -webkit-overflow-scrolling: touch;
-    background: rgba(15, 12, 35, 0.9);
+    background: #ffffff;
   }
 
   .sidebar::-webkit-scrollbar {
@@ -1333,6 +1347,9 @@ pre, code {
   --border: #000000;
   --gradient: linear-gradient(135deg, #000000, #18181b);
   --bg-overlay-opacity: 0.15;
+  --ink: #000000;
+  --ink-2: #FF4FD8;
+  --ink-3: #4FF8FF;
   background-color: #ffffff !important;
   color: #000000 !important;
   font-family: 'Space Mono', 'Courier New', monospace, sans-serif !important;
@@ -2236,6 +2253,122 @@ pre, code {
   color: #18181b !important;
   font-family: 'Space Mono', monospace !important;
   font-weight: 600 !important;
+}
+
+/* Explicit Black & White Neo-Brutalist Footer */
+.footer,
+.theme-bw .footer {
+  background: #ffffff !important;
+  border-top: 2px solid #000000 !important;
+  color: #000000 !important;
+  font-family: 'Space Mono', monospace !important;
+  font-size: 13px !important;
+  font-weight: 700 !important;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  text-align: center !important;
+  padding: 16px 24px !important;
+}
+
+.footer span,
+.theme-bw .footer span {
+  color: #000000 !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.2px !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.footer-heart {
+  display: inline-block;
+  margin: 0 5px;
+  animation: heart-pulse 2s ease-in-out infinite;
+  transform-origin: center;
+}
+
+@keyframes heart-pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.18); }
+}
+
+.footer-link,
+.footer a,
+.theme-bw .footer a {
+  color: #000000 !important;
+  text-decoration: underline !important;
+  text-decoration-thickness: 1.5px !important;
+  text-underline-offset: 3px !important;
+  font-weight: 700 !important;
+  transition: opacity 0.15s ease, background 0.15s ease, color 0.15s ease;
+  padding: 2px 4px;
+  border-radius: 0px;
+}
+
+.footer-link:hover,
+.footer a:hover,
+.theme-bw .footer a:hover {
+  background: #000000 !important;
+  color: #ffffff !important;
+  text-decoration: none !important;
+}
+
+/* ==========================================================================
+   28 HI-LITER — ANIMATED TEXT EFFECT (PURE CSS)
+   A marker pen paints across the word, then lifts off
+   ========================================================================== */
+
+.fx-marker {
+  font: 600 28px/1.3 "JetBrains Mono", monospace;
+  letter-spacing: .08em;
+  color: var(--ink);
+  padding: .1em .2em;
+  background: linear-gradient(100deg,
+      color-mix(in srgb, var(--ink-2) 85%, transparent),
+      color-mix(in srgb, var(--ink-2) 60%, transparent)
+    ) no-repeat 0 62%;
+  background-size: 0% 46%;
+  animation: fx-marker 3s ease-in-out infinite;
+}
+
+/* Header brand integration: seamlessly styles header h1 */
+.header h1 .fx-marker {
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+  letter-spacing: inherit;
+  line-height: inherit;
+  display: inline-flex;
+  align-items: center;
+}
+
+/* Optional per-letter support with inline --i index */
+.fx-marker [style*="--i"] {
+  display: inline-block;
+  background: linear-gradient(100deg,
+      color-mix(in srgb, var(--ink-2) 85%, transparent),
+      color-mix(in srgb, var(--ink-2) 60%, transparent)
+    ) no-repeat 0 62%;
+  background-size: 0% 46%;
+  animation: fx-marker 3s ease-in-out infinite;
+  animation-delay: calc(var(--i, 0) * 0.08s);
+}
+
+@keyframes fx-marker {
+  0%        { background-size: 0% 46%;   background-position: 0 62%; }
+  38%, 62%  { background-size: 100% 46%; background-position: 0 62%; }
+  100%      { background-size: 0% 46%;   background-position: 100% 62%; }
+}
+
+/* Respect user's motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  .fx-marker,
+  .fx-marker [style*="--i"] {
+    animation: none !important;
+    background-size: 100% 46% !important;
+  }
 }
 
 
