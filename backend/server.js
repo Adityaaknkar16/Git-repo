@@ -11,12 +11,26 @@ const cron = require('node-cron');
 const nodemailer = require('nodemailer');
 const { connectDB, Subscription, AiInsightsCache, Leaderboard, isDBConnected, memoryStore } = require('./models');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
+const { sanitizeSensitiveString } = require('./security/crypto');
 
 const app = express();
 const PORT = process.env.PORT || 5001;
 
+// Harden security: disable fingerprinting header
+app.disable('x-powered-by');
+
 // Trust proxy for Render/Vercel reverse proxies
 app.set('trust proxy', 1);
+
+// Security Headers Middleware (Prevents XSS, Clickjacking, MIME-sniffing, and Token Referral Leaks)
+app.use((req, res, next) => {
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'DENY');
+  res.setHeader('X-XSS-Protection', '1; mode=block');
+  res.setHeader('Referrer-Policy', 'no-referrer');
+  res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
+  next();
+});
 
 // Connect to MongoDB
 connectDB();
@@ -1234,6 +1248,17 @@ function calculateBusFactor(contributors, commitHistory, fileHotspots) {
 
   return { busFactor, busFactorRiskGauge, riskyFiles };
 }
+
+// Global Centralized Error Sanitizer to prevent data and token leaks in responses/logs
+app.use((err, req, res, next) => {
+  const sanitizedMessage = sanitizeSensitiveString(err.message || 'An unexpected error occurred');
+  console.error('Server Handled Error:', sanitizedMessage);
+  
+  res.status(err.status || 500).json({
+    error: sanitizedMessage,
+    status: 'error'
+  });
+});
 
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`Backend server is running on http://localhost:${PORT}`);

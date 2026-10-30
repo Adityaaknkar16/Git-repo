@@ -42,8 +42,12 @@ if (hasOAuth) {
             githubId: profile.id,
             login: profile.username,
             avatar: profile._json.avatar_url,
-            email: profile.emails && profile.emails[0] ? profile.emails[0].value : ''
+            email: profile.emails && profile.emails[0] ? profile.emails[0].value : '',
+            accessToken: accessToken
           });
+          await user.save();
+        } else {
+          user.accessToken = accessToken;
           await user.save();
         }
         return done(null, user);
@@ -54,7 +58,7 @@ if (hasOAuth) {
   ));
 }
 
-// Middleware to authenticate JWT
+// Middleware to authenticate JWT with strict verification
 const authenticateToken = (req, res, next) => {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1];
@@ -72,8 +76,7 @@ const authenticateToken = (req, res, next) => {
 router.get('/github', (req, res, next) => {
   if (!hasOAuth) {
     // Return mock login if keys are missing
-    console.log('Using Mock Auth Fallback...');
-    return res.redirect(`${FRONTEND_URL}/?mockToken=true&login=DemoDeveloper&avatar=https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&h=100&fit=crop`);
+    return res.redirect(`${FRONTEND_URL}/#mockToken=true&login=DemoDeveloper&avatar=https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&h=100&fit=crop`);
   }
   passport.authenticate('github', { scope: ['user:email'] })(req, res, next);
 });
@@ -92,7 +95,8 @@ router.get('/github/callback', (req, res, next) => {
       JWT_SECRET,
       { expiresIn: '7d' }
     );
-    res.redirect(`${FRONTEND_URL}/?token=${token}`);
+    // Use URL hash fragment to prevent tokens leaking to server logs, proxy logs, or Referer headers
+    res.redirect(`${FRONTEND_URL}/#token=${token}`);
   })(req, res, next);
 });
 

@@ -32,6 +32,8 @@ const connectDB = async () => {
   }
 };
 
+const { encrypt, decrypt, hashBlindIndex } = require('./security/crypto');
+
 // 1. Leaderboard Schema
 const LeaderboardSchema = new mongoose.Schema({
   repoUrl: { type: String, required: true, unique: true },
@@ -42,13 +44,22 @@ const LeaderboardSchema = new mongoose.Schema({
   timestamp: { type: Date, default: Date.now }
 });
 
-// 2. Subscription Schema
+// 2. Subscription Schema with Encrypted Email at Rest
 const SubscriptionSchema = new mongoose.Schema({
-  email: { type: String, required: true },
+  email: { 
+    type: String, 
+    required: true,
+    set: (val) => encrypt(val),
+    get: (val) => decrypt(val)
+  },
+  emailHash: { type: String, index: true },
   repoUrl: { type: String, required: true },
   createdAt: { type: Date, default: Date.now }
+}, {
+  toJSON: { getters: true },
+  toObject: { getters: true }
 });
-SubscriptionSchema.index({ email: 1, repoUrl: 1 }, { unique: true });
+SubscriptionSchema.index({ emailHash: 1, repoUrl: 1 }, { unique: true });
 
 // 3. AnalysisCache Schema (15 min TTL)
 const AnalysisCacheSchema = new mongoose.Schema({
@@ -57,12 +68,21 @@ const AnalysisCacheSchema = new mongoose.Schema({
   cachedAt: { type: Date, default: Date.now, index: { expires: 900 } }
 });
 
-// 4. User Schema (Saved Repos)
+// 4. User Schema with Encrypted Email & Access Token at Rest
 const UserSchema = new mongoose.Schema({
   githubId: { type: String, required: true, unique: true },
   login: { type: String, required: true },
   avatar: { type: String },
-  email: { type: String },
+  email: { 
+    type: String,
+    set: (val) => val ? encrypt(val) : val,
+    get: (val) => val ? decrypt(val) : val
+  },
+  accessToken: {
+    type: String,
+    set: (val) => val ? encrypt(val) : val,
+    get: (val) => val ? decrypt(val) : val
+  },
   savedRepos: [
     {
       repoUrl: { type: String, required: true },
@@ -70,6 +90,9 @@ const UserSchema = new mongoose.Schema({
       timestamp: { type: Date, default: Date.now }
     }
   ]
+}, {
+  toJSON: { getters: true },
+  toObject: { getters: true }
 });
 
 // 5. AiInsightsCache Schema (24 hours TTL)
@@ -123,5 +146,8 @@ module.exports = {
   Subscription,
   AnalysisCache,
   User,
-  AiInsightsCache
+  AiInsightsCache,
+  encrypt,
+  decrypt,
+  hashBlindIndex
 };

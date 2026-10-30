@@ -35,6 +35,7 @@ Render hosts the Express API server located in the `backend/` directory.
 | `GEMINI_API_KEY` | Optional | Google Gemini API key for AI Code Analyzer | `<YOUR_GEMINI_API_KEY>` |
 | `JWT_SECRET` | Recommended | Secure random string for JWT token signing | `<YOUR_JWT_SECRET_STRING>` |
 | `SESSION_SECRET` | Recommended | Secure random string for session encryption | `<YOUR_SESSION_SECRET_STRING>` |
+| `ENCRYPTION_KEY` | Recommended | 256-bit AES key for data-at-rest encryption (tokens, emails, secrets) | `<SECURE_32_CHAR_ENCRYPTION_KEY>` |
 | `FRONTEND_URL` | Recommended | The production URL of your Vercel frontend | `https://<YOUR_APP_NAME>.vercel.app` |
 | `BACKEND_URL` | Optional | The URL of this Render web service (for OAuth redirects) | `https://<YOUR_API_NAME>.onrender.com` |
 | `MONGODB_URI` | Optional | MongoDB connection string (leave blank for stateless demo mode) | `mongodb+srv://<USER>:<PASSWORD>@cluster.mongodb.net/<DB_NAME>` |

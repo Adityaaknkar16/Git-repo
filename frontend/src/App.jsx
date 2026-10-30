@@ -51,7 +51,32 @@ export default function App() {
   const [repoUrl, setRepoUrl] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
   const [activeTab, setActiveTab] = useState('overview');
+  const [modalAlert, setModalAlert] = useState(null);
+
+  const triggerThemedAlert = (message, title = 'NOTIFICATION', type = 'info') => {
+    setModalAlert({ message, title, type });
+  };
+
+  // Intercept native browser alert() to use our Neo-Brutalist B&W themed dialog
+  useEffect(() => {
+    const originalAlert = window.alert;
+    window.alert = (msg) => {
+      triggerThemedAlert(msg, 'NOTIFICATION', 'info');
+    };
+    return () => {
+      window.alert = originalAlert;
+    };
+  }, []);
+
+  // Auto-dismiss success banners after 6 seconds
+  useEffect(() => {
+    if (successMessage) {
+      const timer = setTimeout(() => setSuccessMessage(''), 6000);
+      return () => clearTimeout(timer);
+    }
+  }, [successMessage]);
   
   // Auth state
   const [token, setToken] = useState(localStorage.getItem('token') || '');
@@ -74,11 +99,16 @@ export default function App() {
   // Timeline filtered commits
   const [timelineCommits, setTimelineCommits] = useState([]);
 
-  // URL Auth callbacks
+  // URL Auth callbacks with immediate token wiping for data leak prevention
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const urlToken = params.get('token');
-    const mockToken = params.get('mockToken');
+    // Check both hash fragment (#token=...) and query parameters (?token=...)
+    const searchParams = new URLSearchParams(window.location.search);
+    const hashParams = new URLSearchParams(window.location.hash.startsWith('#') ? window.location.hash.slice(1) : window.location.hash);
+
+    const urlToken = hashParams.get('token') || searchParams.get('token');
+    const mockToken = hashParams.get('mockToken') || searchParams.get('mockToken');
+    const loginUser = hashParams.get('login') || searchParams.get('login');
+    const avatarUser = hashParams.get('avatar') || searchParams.get('avatar');
 
     if (urlToken) {
       localStorage.setItem('token', urlToken);
@@ -91,16 +121,18 @@ export default function App() {
         setUser(payload);
         toast.success('Successfully logged in with GitHub!');
       } catch (e) {
-        console.error(e);
+        console.error('Token validation error:', e.message);
       }
+      // Instantly wipe token from browser URL bar to prevent token leakage in history, referrers, or logs
       window.history.replaceState({}, document.title, window.location.pathname);
     } else if (mockToken) {
-      const mockUser = { login: params.get('login'), avatar: params.get('avatar') };
+      const mockUser = { login: loginUser || 'DemoDeveloper', avatar: avatarUser || '' };
       localStorage.setItem('token', 'mock_token');
       localStorage.setItem('user', JSON.stringify(mockUser));
       setToken('mock_token');
       setUser(mockUser);
-      toast.success('Successfully logged in (Mock Mode)!');
+      toast.success('Successfully logged in (Demo Mode)!');
+      // Instantly wipe token from browser URL bar
       window.history.replaceState({}, document.title, window.location.pathname);
     }
   }, []);
@@ -129,6 +161,7 @@ export default function App() {
       
       const healthRes = await axios.post(`${BACKEND_URL}/api/health-score`, { repoUrl });
       saveAnalysis(repoUrl, healthRes.data.score);
+      setSuccessMessage('Repository analyzed successfully! Ready to explore modules.');
       toast.success('Repository analyzed successfully! ⛏️');
     } catch (err) {
       setError(err?.response?.data?.msg || err.message || 'Failed to analyze repository');
@@ -147,6 +180,7 @@ export default function App() {
         setData(res.data);
         setTimelineCommits(res.data.commitHistory || []);
         saveAnalysis(demoUrl, 82);
+        setSuccessMessage('Loaded demo repository with Minecraft companion active! 💎');
         toast.success('Loaded demo repository with Minecraft companion! 💎');
       })
       .catch(() => setError('Failed to load demo data.'))
@@ -159,6 +193,7 @@ export default function App() {
       return;
     }
     navigator.clipboard.writeText(repoUrl);
+    setSuccessMessage('Repository link copied to clipboard! 📋');
     toast.success('Repository link copied to clipboard! 📋');
   };
 
@@ -179,11 +214,18 @@ export default function App() {
     });
     setTimelineCommits([]);
     setError('');
+    setSuccessMessage('Workspace cleared and reset successfully.');
     toast.success('Dashboard cleared.');
   };
 
   const exportDashboard = () => {
-    alert('Dashboard exported to PNG successfully! (Check your browser downloads folder)');
+    triggerThemedAlert(
+      'Dashboard exported to PNG successfully! (Check your browser downloads folder)',
+      'EXPORT COMPLETE',
+      'success'
+    );
+    toast.success('Dashboard exported to PNG! 📸');
+    setSuccessMessage('Dashboard report exported successfully to PNG.');
   };
 
   // Listen for query parameter tab updates
@@ -251,7 +293,43 @@ export default function App() {
   return (
     <div className="app theme-bw">
       <DotBackground />
-      <Toaster position="bottom-right" />
+      <Toaster 
+        position="top-right" 
+        toastOptions={{
+          className: 'bw-neo-toast',
+          duration: 4500,
+          style: {
+            background: '#ffffff',
+            color: '#000000',
+            border: '2.5px solid #000000',
+            borderRadius: '0px',
+            boxShadow: '4px 4px 0px #000000',
+            fontFamily: "'Space Mono', monospace",
+            fontSize: '12px',
+            fontWeight: '700',
+            padding: '12px 16px',
+            letterSpacing: '-0.2px',
+          },
+          success: {
+            iconTheme: {
+              primary: '#000000',
+              secondary: '#ffffff',
+            },
+            style: {
+              borderLeft: '8px solid #000000',
+            }
+          },
+          error: {
+            iconTheme: {
+              primary: '#000000',
+              secondary: '#ffffff',
+            },
+            style: {
+              borderLeft: '8px solid #000000',
+            }
+          }
+        }}
+      />
       
       {/* Minecraft Character Active across ALL pages & tabs */}
       <MinecraftCompanion activeTab={activeTab} repoName={repo ? `${owner}/${repo}` : ''} />
@@ -332,7 +410,40 @@ export default function App() {
           </div>
         </div>
 
-        {error && <div className="error">{error}</div>}
+        {/* Status Messages strictly adhering to Black & White Neo-Brutalist Theme */}
+        {error && (
+          <div className="status-banner error-banner" role="alert">
+            <div className="banner-content">
+              <span className="banner-tag error-tag">[!] ERROR</span>
+              <span className="banner-text">{error}</span>
+            </div>
+            <button 
+              type="button" 
+              className="banner-close-btn" 
+              onClick={() => setError('')} 
+              title="Dismiss error message"
+            >
+              ×
+            </button>
+          </div>
+        )}
+
+        {successMessage && (
+          <div className="status-banner success-banner" role="status">
+            <div className="banner-content">
+              <span className="banner-tag success-tag">[✔] SUCCESS</span>
+              <span className="banner-text">{successMessage}</span>
+            </div>
+            <button 
+              type="button" 
+              className="banner-close-btn" 
+              onClick={() => setSuccessMessage('')} 
+              title="Dismiss success message"
+            >
+              ×
+            </button>
+          </div>
+        )}
       </header>
 
       {((data.repoInfo && activeTab !== 'org' && activeTab !== 'leaderboard' && activeTab !== 'profile') || activeTab === 'battle' || activeTab === 'org' || activeTab === 'leaderboard' || activeTab === 'profile') && (
@@ -342,20 +453,24 @@ export default function App() {
               <span>GROUPS / MODULES</span>
               <Box size={14} />
             </div>
-            {tabs.map(tab => (
-              <button 
-                key={tab.id} 
-                className={`tab-btn ${activeTab === tab.id ? 'active' : ''}`}
-                onClick={() => {
-                  setActiveTab(tab.id);
-                  const newUrl = `${window.location.origin}${window.location.pathname}?tab=${tab.id}`;
-                  window.history.pushState({ path: newUrl }, '', newUrl);
-                }}
-              >
-                {tab.icon}
-                <span>{tab.name}</span>
-              </button>
-            ))}
+            {tabs.map(tab => {
+              const isGraph = tab.id === 'commits';
+              return (
+                <button 
+                  key={tab.id} 
+                  className={`tab-btn ${isGraph ? 'tab-graph-btn' : ''} ${activeTab === tab.id ? 'active' : ''}`}
+                  onClick={() => {
+                    setActiveTab(tab.id);
+                    const newUrl = `${window.location.origin}${window.location.pathname}?tab=${tab.id}`;
+                    window.history.pushState({ path: newUrl }, '', newUrl);
+                  }}
+                >
+                  {tab.icon}
+                  <span>{tab.name}</span>
+                  {isGraph && <span className="graph-badge">GRAPH</span>}
+                </button>
+              );
+            })}
           </aside>
 
           <main className="tab-content">
@@ -647,16 +762,57 @@ export default function App() {
           <Layers size={48} className="empty-icon" />
           <h2>Welcome to Git Repository Visualizer</h2>
           <p>Provide a public GitHub repository link above to start or load sample data directly.</p>
-          <div style={{ display: 'flex', gap: '12px', marginTop: '12px' }}>
-            <button className="demo-btn-large" onClick={loadDemo}>Explore Demo Workspace</button>
-            <button className="demo-btn-large" style={{ background: 'linear-gradient(135deg, #ffb703, #ff5555)' }} onClick={() => setActiveTab('battle')}>⚔️ Enter Battle Mode</button>
-          </div>
         </div>
       )}
 
       <footer className="footer">
         <span>Backend: {BACKEND_URL} · Minimal Black & White Neo-Brutalist Edition</span>
       </footer>
+
+      {/* Black & White Neo-Brutalist Themed Alert Modal */}
+      {modalAlert && (
+        <div className="neo-modal-backdrop" onClick={() => setModalAlert(null)}>
+          <div 
+            className="neo-modal-window" 
+            onClick={(e) => e.stopPropagation()}
+            role="dialog"
+            aria-modal="true"
+          >
+            <div className="neo-modal-header">
+              <div className="neo-modal-title">
+                <span className="neo-modal-icon">⛏️</span>
+                <span>{modalAlert.title || 'SYSTEM NOTIFICATION'}</span>
+              </div>
+              <button 
+                type="button" 
+                className="neo-modal-close" 
+                onClick={() => setModalAlert(null)}
+                title="Close"
+              >
+                ×
+              </button>
+            </div>
+            
+            <div className="neo-modal-body">
+              <p className="neo-modal-text">{modalAlert.message}</p>
+            </div>
+            
+            <div className="neo-modal-footer">
+              <button 
+                type="button" 
+                className="neo-modal-btn" 
+                onClick={() => {
+                  if (modalAlert.onConfirm) modalAlert.onConfirm();
+                  setModalAlert(null);
+                }}
+                autoFocus
+              >
+                [ OK / DISMISS ]
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -1,6 +1,7 @@
 const express = require('express');
 const { Octokit } = require('@octokit/rest');
-const { Subscription, AnalysisCache, isDBConnected, safeCheckCache, safeSetCache, memoryStore } = require('../models');
+const { Subscription, AnalysisCache, isDBConnected, safeCheckCache, safeSetCache, memoryStore, hashBlindIndex } = require('../models');
+const { maskEmail } = require('../security/crypto');
 
 const router = express.Router();
 
@@ -78,22 +79,32 @@ router.post('/digest/subscribe', async (req, res) => {
   }
 
   try {
+    const emailHash = hashBlindIndex(email);
     if (!isDBConnected()) {
-      const sub = { email, repoUrl, createdAt: new Date() };
-      memoryStore.subscriptions = memoryStore.subscriptions.filter(s => !(s.email === email && s.repoUrl === repoUrl));
+      const sub = { email, emailHash, repoUrl, createdAt: new Date() };
+      memoryStore.subscriptions = memoryStore.subscriptions.filter(s => !(s.emailHash === emailHash && s.repoUrl === repoUrl));
       memoryStore.subscriptions.push(sub);
-      return res.status(201).json({ msg: 'Successfully subscribed to weekly digest!', sub });
+      return res.status(201).json({ 
+        msg: 'Successfully subscribed to weekly digest!', 
+        sub: { email: maskEmail(email), repoUrl } 
+      });
     }
 
     const sub = await Subscription.findOneAndUpdate(
-      { email, repoUrl },
-      { createdAt: new Date() },
+      { emailHash, repoUrl },
+      { email, emailHash, repoUrl, createdAt: new Date() },
       { upsert: true, new: true }
     );
-    res.status(201).json({ msg: 'Successfully subscribed to weekly digest!', sub });
+    res.status(201).json({ 
+      msg: 'Successfully subscribed to weekly digest!', 
+      sub: { email: maskEmail(sub.email), repoUrl: sub.repoUrl } 
+    });
   } catch (error) {
     console.warn('Subscription error fallback:', error.message);
-    res.status(201).json({ msg: 'Successfully subscribed to weekly digest (Demo Mode)!', sub: { email, repoUrl } });
+    res.status(201).json({ 
+      msg: 'Successfully subscribed to weekly digest (Demo Mode)!', 
+      sub: { email: maskEmail(email), repoUrl } 
+    });
   }
 });
 
@@ -105,12 +116,13 @@ router.delete('/digest/unsubscribe', async (req, res) => {
   }
 
   try {
+    const emailHash = hashBlindIndex(email);
     if (!isDBConnected()) {
-      memoryStore.subscriptions = memoryStore.subscriptions.filter(s => !(s.email === email && s.repoUrl === repoUrl));
+      memoryStore.subscriptions = memoryStore.subscriptions.filter(s => !(s.emailHash === emailHash && s.repoUrl === repoUrl));
       return res.json({ msg: 'Successfully unsubscribed from weekly digest.' });
     }
 
-    await Subscription.findOneAndDelete({ email, repoUrl });
+    await Subscription.findOneAndDelete({ emailHash, repoUrl });
     res.json({ msg: 'Successfully unsubscribed from weekly digest.' });
   } catch (error) {
     res.json({ msg: 'Successfully unsubscribed from weekly digest.' });
