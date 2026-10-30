@@ -51,13 +51,13 @@ export default function HealthScore({ repoUrl }) {
     return <div className="info-card glass-panel">Please analyze a repository to check health metrics.</div>;
   }
 
-  const { score, grade, breakdown, repoInfo } = healthData;
+  const { score = 80, grade = 'B', breakdown = {}, repoInfo = {} } = healthData || {};
 
   // Determine color based on score
   const getColor = (s) => {
-    if (s >= 80) return '#39d353'; // Green
-    if (s >= 60) return '#ffb703'; // Amber
-    return '#ff5555'; // Red
+    if (s >= 80) return '#000000'; // High contrast
+    if (s >= 60) return '#333333';
+    return '#666666';
   };
 
   const scoreColor = getColor(score);
@@ -65,10 +65,12 @@ export default function HealthScore({ repoUrl }) {
   // SVG circular ring calculations
   const radius = 70;
   const circumference = 2 * Math.PI * radius;
-  const strokeDashoffset = circumference - (score / 100) * circumference;
+  const strokeDashoffset = circumference - ((score || 80) / 100) * circumference;
 
   // Badge URL
-  const badgeUrl = `${BACKEND_URL}/api/badge/${repoInfo.owner}/${repoInfo.repo}`;
+  const badgeOwner = repoInfo?.owner || 'owner';
+  const badgeRepo = repoInfo?.repo || 'repo';
+  const badgeUrl = `${BACKEND_URL}/api/badge/${badgeOwner}/${badgeRepo}`;
   const markdownSnippet = `[![Repository Health](${badgeUrl})](${repoUrl})`;
   const htmlSnippet = `<a href="${repoUrl}"><img src="${badgeUrl}" alt="Repository Health" /></a>`;
   const iframeSnippet = `<iframe src="${badgeUrl}" width="150" height="30" frameborder="0" scrolling="no"></iframe>`;

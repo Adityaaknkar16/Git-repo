@@ -20,7 +20,8 @@ import AIInsights from './component/AIInsights.jsx';
 import FileTree from './FileTree.jsx';
 import { Toaster, toast } from 'react-hot-toast';
 import DotBackground from './component/DotBackground.jsx';
-import MinecraftCompanion, { MinecraftHealthBar, MinecraftExpBar } from './component/MinecraftCompanion.jsx';
+import { MinecraftHealthBar, MinecraftExpBar } from './component/MinecraftCompanion.jsx';
+import html2canvas from 'html2canvas';
 
 // Import Additional Components
 import HealthScore from './component/HealthScore.jsx';
@@ -50,6 +51,7 @@ const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5001';
 export default function App() {
   const [repoUrl, setRepoUrl] = useState('');
   const [loading, setLoading] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
   const [error, setError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
   const [activeTab, setActiveTab] = useState('overview');
@@ -154,37 +156,60 @@ export default function App() {
     if (!repoUrl) return;
     setError('');
     setLoading(true);
+    const startTime = Date.now();
     try {
       const res = await axios.post(`${BACKEND_URL}/api/analyze-repo`, { repoUrl });
+      const healthRes = await axios.post(`${BACKEND_URL}/api/health-score`, { repoUrl }).catch(() => ({ data: { score: 80 } }));
+      
+      // Enforce at least 2 seconds (2000ms) loading animation display
+      const elapsed = Date.now() - startTime;
+      if (elapsed < 2000) {
+        await new Promise(resolve => setTimeout(resolve, 2000 - elapsed));
+      }
+
       setData(res.data);
       setTimelineCommits(res.data.commitHistory || []);
-      
-      const healthRes = await axios.post(`${BACKEND_URL}/api/health-score`, { repoUrl });
       saveAnalysis(repoUrl, healthRes.data.score);
       setSuccessMessage('Repository analyzed successfully! Ready to explore modules.');
       toast.success('Repository analyzed successfully! ⛏️');
     } catch (err) {
+      const elapsed = Date.now() - startTime;
+      if (elapsed < 2000) {
+        await new Promise(resolve => setTimeout(resolve, 2000 - elapsed));
+      }
       setError(err?.response?.data?.msg || err.message || 'Failed to analyze repository');
     } finally {
       setLoading(false);
     }
   }
 
-  const loadDemo = () => {
+  const loadDemo = async () => {
     const demoUrl = 'https://github.com/demo/demo';
     setRepoUrl(demoUrl);
     setError('');
     setLoading(true);
-    axios.post(`${BACKEND_URL}/api/analyze-repo`, { repoUrl: demoUrl })
-      .then(res => {
-        setData(res.data);
-        setTimelineCommits(res.data.commitHistory || []);
-        saveAnalysis(demoUrl, 82);
-        setSuccessMessage('Loaded demo repository with Minecraft companion active! 💎');
-        toast.success('Loaded demo repository with Minecraft companion! 💎');
-      })
-      .catch(() => setError('Failed to load demo data.'))
-      .finally(() => setLoading(false));
+    const startTime = Date.now();
+    try {
+      const res = await axios.post(`${BACKEND_URL}/api/analyze-repo`, { repoUrl: demoUrl });
+      // Enforce at least 2 seconds (2000ms) loading animation display
+      const elapsed = Date.now() - startTime;
+      if (elapsed < 2000) {
+        await new Promise(resolve => setTimeout(resolve, 2000 - elapsed));
+      }
+      setData(res.data);
+      setTimelineCommits(res.data.commitHistory || []);
+      saveAnalysis(demoUrl, 82);
+      setSuccessMessage('Loaded demo repository workspace! 💎');
+      toast.success('Loaded demo repository workspace! 💎');
+    } catch (err) {
+      const elapsed = Date.now() - startTime;
+      if (elapsed < 2000) {
+        await new Promise(resolve => setTimeout(resolve, 2000 - elapsed));
+      }
+      setError('Failed to load demo data.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleCopyUrl = () => {
@@ -218,14 +243,96 @@ export default function App() {
     toast.success('Dashboard cleared.');
   };
 
-  const exportDashboard = () => {
-    triggerThemedAlert(
-      'Dashboard exported to PNG successfully! (Check your browser downloads folder)',
-      'EXPORT COMPLETE',
-      'success'
-    );
-    toast.success('Dashboard exported to PNG! 📸');
-    setSuccessMessage('Dashboard report exported successfully to PNG.');
+  const exportDashboard = async () => {
+    if (!data.repoInfo && activeTab !== 'battle' && activeTab !== 'org' && activeTab !== 'leaderboard') {
+      toast.error('No repository data to export! Please load a repository first.');
+      triggerThemedAlert(
+        'No repository data is currently loaded. Please enter a GitHub repository URL or click "Load Demo Data" before exporting a report.',
+        'CANNOT EXPORT REPORT',
+        'warning'
+      );
+      return;
+    }
+
+    setIsExporting(true);
+    const toastId = toast.loading('Generating high-resolution report image...');
+
+    try {
+      const targetElement = document.getElementById('dashboard-tab-content') || 
+                            document.querySelector('.tab-content') || 
+                            document.querySelector('.dashboard-container');
+      
+      if (!targetElement) {
+        throw new Error('Dashboard container element not found.');
+      }
+
+      const canvas = await html2canvas(targetElement, {
+        scale: 2,
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: '#ffffff',
+        logging: false,
+        onclone: (clonedDoc) => {
+          const el = clonedDoc.getElementById('dashboard-tab-content') || clonedDoc.querySelector('.tab-content');
+          if (el) {
+            el.style.height = 'auto';
+            el.style.maxHeight = 'none';
+            el.style.overflow = 'visible';
+          }
+        }
+      });
+
+      const imgData = canvas.toDataURL('image/png');
+      const repoName = data.repoInfo 
+        ? `${data.repoInfo.owner}_${data.repoInfo.repo}`
+        : (repoUrl ? repoUrl.replace(/[^a-zA-Z0-9]/g, '_') : 'repository');
+      const filename = `${repoName}_${activeTab}_report.png`;
+
+      const downloadLink = document.createElement('a');
+      downloadLink.href = imgData;
+      downloadLink.download = filename;
+      document.body.appendChild(downloadLink);
+      downloadLink.click();
+      document.body.removeChild(downloadLink);
+
+      toast.success(`Exported: ${filename} 📸`, { id: toastId });
+      setSuccessMessage(`Dashboard report exported and downloaded as ${filename}`);
+      triggerThemedAlert(
+        `Your dashboard report "${filename}" has been generated and saved to your Downloads folder!`,
+        'EXPORT SUCCESSFUL',
+        'success'
+      );
+    } catch (err) {
+      console.error('Failed to capture PNG:', err);
+      // Fallback: download JSON report summary
+      try {
+        const repoName = data.repoInfo ? `${data.repoInfo.owner}_${data.repoInfo.repo}` : 'repository';
+        const filename = `${repoName}_${activeTab}_summary.json`;
+        const exportData = {
+          repository: data.repoInfo,
+          activeTab,
+          exportedAt: new Date().toISOString(),
+          languages: data.languages,
+          commitHistoryCount: data.commitHistory?.length || 0,
+          contributorsCount: data.contributors?.length || 0,
+          summary: "Git Repository Visualizer Exported Report Data"
+        };
+        const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = filename;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+        toast.success(`Downloaded report data as ${filename}!`, { id: toastId });
+      } catch (fallbackErr) {
+        toast.error('Failed to export dashboard report.', { id: toastId });
+      }
+    } finally {
+      setIsExporting(false);
+    }
   };
 
   // Listen for query parameter tab updates
@@ -245,18 +352,30 @@ export default function App() {
     toast.success('Logged out successfully.');
   };
 
-  const handleLoadSavedRepo = (url) => {
+  const handleLoadSavedRepo = async (url) => {
     setRepoUrl(url);
     setError('');
     setLoading(true);
-    axios.post(`${BACKEND_URL}/api/analyze-repo`, { repoUrl: url })
-      .then(res => {
-        setData(res.data);
-        setTimelineCommits(res.data.commitHistory || []);
-        setActiveTab('overview');
-      })
-      .catch(() => setError('Failed to load saved repository.'))
-      .finally(() => setLoading(false));
+    const startTime = Date.now();
+    try {
+      const res = await axios.post(`${BACKEND_URL}/api/analyze-repo`, { repoUrl: url });
+      // Enforce at least 2 seconds (2000ms) loading animation display
+      const elapsed = Date.now() - startTime;
+      if (elapsed < 2000) {
+        await new Promise(resolve => setTimeout(resolve, 2000 - elapsed));
+      }
+      setData(res.data);
+      setTimelineCommits(res.data.commitHistory || []);
+      setActiveTab('overview');
+    } catch (err) {
+      const elapsed = Date.now() - startTime;
+      if (elapsed < 2000) {
+        await new Promise(resolve => setTimeout(resolve, 2000 - elapsed));
+      }
+      setError('Failed to load saved repository.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const tabs = [
@@ -331,9 +450,23 @@ export default function App() {
         }}
       />
       
-      {/* Minecraft Character Active across ALL pages & tabs */}
-      <MinecraftCompanion activeTab={activeTab} repoName={repo ? `${owner}/${repo}` : ''} />
+      {/* 55 Domino Falling Bars Loading Animation (Enforced 2-second duration) */}
+      {loading && (
+        <div className="domino-loading-overlay" aria-live="polite">
+          <div className="domino-loading-box">
+            <div className="ld-domino" aria-label="Loading animation">
+              <i></i>
+              <i></i>
+              <i></i>
+              <i></i>
+            </div>
+            <span className="domino-loading-text">LOADING REPOSITORY DATA...</span>
+            <span className="domino-loading-subtext">Fetching commits, branches & modules</span>
+          </div>
+        </div>
+      )}
 
+      {/* Header and Controls */}
       <header className="header glass-panel">
         <div className="title-row">
           <div>
@@ -386,8 +519,14 @@ export default function App() {
             <button type="button" className="toolbar-btn" onClick={handleCopyUrl} title="Copy Repository Link">
               <Copy size={13} /> Copy Repo URL
             </button>
-            <button type="button" className="toolbar-btn" onClick={exportDashboard} title="Export Dashboard Report">
-              <Download size={13} /> Export Report
+            <button 
+              type="button" 
+              className="toolbar-btn" 
+              onClick={exportDashboard} 
+              title="Export Dashboard Report"
+              disabled={isExporting}
+            >
+              <Download size={13} /> {isExporting ? 'Exporting…' : 'Export Report'}
             </button>
             <button type="button" className="toolbar-btn danger" onClick={handleReset} title="Reset Dashboard">
               <RotateCcw size={13} /> Reset All
@@ -473,15 +612,15 @@ export default function App() {
             })}
           </aside>
 
-          <main className="tab-content">
+          <main className="tab-content" id="dashboard-tab-content">
             {activeTab === 'overview' && (
               <div className="grid">
-                {/* Minecraft Overview Banner */}
+                {/* Developer Overview Banner */}
                 <section className="card wide" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
                   <div>
-                    <h2 style={{ margin: '0 0 6px 0', border: 'none' }}>⛏️ Minecraft Developer Overview</h2>
+                    <h2 style={{ margin: '0 0 6px 0', border: 'none' }}>Developer Overview</h2>
                     <p style={{ margin: 0, fontSize: '12px', color: 'var(--muted)' }}>
-                      High-contrast neo-brutalist theme active. Your Minecraft companion is mining insights below!
+                      High-contrast neo-brutalist dashboard active.
                     </p>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '14px', flexWrap: 'wrap' }}>

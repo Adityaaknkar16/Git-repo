@@ -5,11 +5,11 @@ export default function DependencyGraph({ dependencies }) {
   const [filterVulnerable, setFilterVulnerable] = useState(false);
 
   const list = Object.keys(dependencies || {}).map(name => {
-    const version = dependencies[name];
+    const versionStr = String(version || '');
     // Simulate some vulnerability diagnostics
     let status = 'secure';
     let advisory = '';
-    let current = version.replace(/[\^~]/, '');
+    let current = versionStr.replace(/[\^~]/, '');
     let latest = current;
 
     if (name.includes('axios') || name.includes('express')) {
@@ -24,7 +24,7 @@ export default function DependencyGraph({ dependencies }) {
 
     return {
       name,
-      version,
+      version: versionStr,
       current,
       latest,
       status,
@@ -47,7 +47,7 @@ export default function DependencyGraph({ dependencies }) {
 
   return (
     <div className="dependency-graph-container">
-      <div className="toolbar glass-panel">
+      <div className="toolbar">
         <label className="checkbox-label">
           <input 
             type="checkbox" 
@@ -60,7 +60,7 @@ export default function DependencyGraph({ dependencies }) {
 
       <div className="dependency-tree">
         {filtered.map(dep => (
-          <div key={dep.name} className={`dep-card glass-panel status-${dep.status}`}>
+          <div key={dep.name} className={`dep-card status-${dep.status}`}>
             <div className="dep-info">
               <div className="dep-title-row">
                 <Package size={16} className="pkg-icon" />
@@ -95,17 +95,20 @@ export default function DependencyGraph({ dependencies }) {
         }
         .toolbar {
           padding: 10px 14px;
-          background: #17171e;
-          border: 1px solid var(--border);
-          border-radius: 8px;
+          background: #ffffff;
+          border: 2px solid #000000;
+          box-shadow: 2px 2px 0px #000000;
+          border-radius: 4px;
         }
         .checkbox-label {
           display: flex;
           align-items: center;
           gap: 8px;
-          font-size: 12px;
+          font-size: 13px;
+          font-weight: 700;
           cursor: pointer;
           user-select: none;
+          color: #000000;
         }
         .dependency-tree {
           display: flex;
@@ -116,22 +119,23 @@ export default function DependencyGraph({ dependencies }) {
           padding-right: 4px;
         }
         .dep-card {
-          padding: 12px;
-          background: #17171e;
-          border: 1px solid var(--border);
-          border-radius: 8px;
+          padding: 12px 14px;
+          background: #ffffff;
+          border: 2px solid #000000;
+          box-shadow: 3px 3px 0px #000000;
+          border-radius: 4px;
           display: flex;
           justify-content: space-between;
           align-items: center;
           gap: 16px;
         }
         .dep-card.status-high {
-          border-left: 3px solid #ff4747;
-          background: rgba(255, 71, 71, 0.03);
+          border-left: 6px solid #000000;
+          background: #fafafa;
         }
         .dep-card.status-medium {
-          border-left: 3px solid #ffaa00;
-          background: rgba(255, 170, 0, 0.03);
+          border-left: 6px solid #444444;
+          background: #fafafa;
         }
         .dep-info {
           display: flex;
@@ -145,22 +149,26 @@ export default function DependencyGraph({ dependencies }) {
           align-items: center;
           gap: 8px;
         }
-        .pkg-icon { color: var(--muted); }
+        .pkg-icon { color: #000000; }
         .dep-name {
-          font-weight: 600;
-          font-size: 13px;
+          font-weight: 800;
+          font-size: 14px;
+          color: #000000;
         }
         .dep-version {
           font-family: monospace;
-          font-size: 11px;
-          color: var(--muted);
-          background: #23232b;
+          font-size: 12px;
+          color: #000000;
+          background: #f0f0f0;
+          border: 1px solid #000000;
           padding: 1px 6px;
-          border-radius: 4px;
+          border-radius: 2px;
+          font-weight: 600;
         }
         .advisory-text {
-          font-size: 11px;
-          color: #ff9f1c;
+          font-size: 12px;
+          color: #000000;
+          font-weight: 600;
           margin-top: 4px;
         }
         .dep-meta {
@@ -171,34 +179,36 @@ export default function DependencyGraph({ dependencies }) {
           flex-shrink: 0;
         }
         .vuln-badge {
-          font-size: 10px;
-          padding: 2px 6px;
-          border-radius: 4px;
+          font-size: 11px;
+          padding: 3px 8px;
+          border: 2px solid #000000;
+          border-radius: 2px;
           display: flex;
           align-items: center;
           gap: 4px;
-          font-weight: 600;
+          font-weight: 800;
+          text-transform: uppercase;
         }
-        .vuln-badge.high { background: rgba(255, 71, 71, 0.15); color: #ff4747; }
-        .vuln-badge.medium { background: rgba(255, 170, 0, 0.15); color: #ffaa00; }
-        .vuln-badge.secure { background: rgba(57, 211, 83, 0.15); color: #39d353; }
+        .vuln-badge.high { background: #000000; color: #ffffff; }
+        .vuln-badge.medium { background: #555555; color: #ffffff; }
+        .vuln-badge.secure { background: #ffffff; color: #000000; }
         .update-prompt {
-          font-size: 10px;
-          color: var(--muted);
+          font-size: 11px;
+          font-weight: 700;
+          font-family: monospace;
+          color: #000000;
           display: flex;
           align-items: center;
-          gap: 2px;
-          background: #23232b;
+          gap: 3px;
+          background: #f0f0f0;
+          border: 1px solid #000000;
           padding: 2px 6px;
-          border-radius: 4px;
-          cursor: pointer;
-        }
-        .update-prompt:hover {
-          color: var(--text);
+          border-radius: 2px;
         }
         .no-data {
           font-size: 13px;
-          color: var(--muted);
+          font-weight: 700;
+          color: #000000;
           text-align: center;
           padding: 20px 0;
         }

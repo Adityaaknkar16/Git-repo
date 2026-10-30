@@ -88,16 +88,20 @@ export default function BusFactor({ busFactorInfo }) {
           
           <div className="risky-files-list">
             {riskyFiles && riskyFiles.length > 0 ? (
-              riskyFiles.map((file, idx) => (
-                <div key={idx} className="risky-file-item">
-                  <span className="risky-file-path" title={file.path}>
-                    {file.path.split('/').pop()}
-                  </span>
-                  <span className="risky-file-owner">
-                    {file.owner} ({file.ownershipPercentage}%)
-                  </span>
-                </div>
-              ))
+              riskyFiles.map((file, idx) => {
+                const pathStr = String(file?.path || '');
+                const fileName = pathStr.split('/').pop() || pathStr || 'Unknown file';
+                return (
+                  <div key={idx} className="risky-file-item">
+                    <span className="risky-file-path" title={pathStr}>
+                      {fileName}
+                    </span>
+                    <span className="risky-file-owner">
+                      {file?.owner || 'Unknown'} ({file?.ownershipPercentage || 0}%)
+                    </span>
+                  </div>
+                );
+              })
             ) : (
               <p className="text-muted" style={{ fontSize: '13px', textAlign: 'center', marginTop: '20px' }}>
                 🎉 Excellent! No files found with single-author ownership exceeding 75%.

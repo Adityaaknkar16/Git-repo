@@ -99,16 +99,18 @@ export default function AIInsights({ repoUrl, languages, contributors, commitHis
         .ai-insights-container {
           display: flex;
           flex-direction: column;
-          gap: 14px;
+          gap: 16px;
         }
         .ai-header {
-          padding: 12px 14px;
-          background: #17171e;
-          border: 1px solid var(--border);
-          border-radius: 8px;
+          padding: 14px 16px;
+          background: #ffffff !important;
+          border: 2px solid #000000 !important;
+          box-shadow: 3px 3px 0px #000000 !important;
+          border-radius: 0px !important;
           display: flex;
           justify-content: space-between;
           align-items: center;
+          color: #000000 !important;
         }
         .title-row {
           display: flex;
@@ -116,24 +118,45 @@ export default function AIInsights({ repoUrl, languages, contributors, commitHis
           gap: 10px;
         }
         .ai-icon {
-          color: #00e575;
-          animation: pulse 2s infinite alternate;
+          color: #000000 !important;
         }
-        .ai-header h4 { margin: 0; font-size: 13px; }
-        .ai-header .subtitle { margin: 2px 0 0; font-size: 11px; color: var(--muted); }
+        .ai-header h4 { 
+          margin: 0; 
+          font-size: 14px; 
+          color: #000000 !important; 
+          font-family: 'Space Mono', monospace !important; 
+          font-weight: 800 !important; 
+        }
+        .ai-header .subtitle { 
+          margin: 3px 0 0; 
+          font-size: 11px; 
+          color: #52525b !important; 
+          font-family: 'Space Mono', monospace !important; 
+          font-weight: 600 !important; 
+        }
         .refresh-btn {
-          background: #23232b;
-          border: 1px solid var(--border);
-          border-radius: 50%;
-          width: 32px;
-          height: 32px;
+          background: #ffffff !important;
+          border: 2px solid #000000 !important;
+          box-shadow: 2px 2px 0px #000000 !important;
+          border-radius: 0px !important;
+          width: 34px;
+          height: 34px;
           display: flex;
           align-items: center;
           justify-content: center;
-          color: var(--text);
+          color: #000000 !important;
           cursor: pointer;
+          transition: transform 0.1s ease, box-shadow 0.1s ease, background 0.1s ease, color 0.1s ease;
         }
-        .refresh-btn:hover { background: #2e2e38; }
+        .refresh-btn:hover { 
+          background: #000000 !important; 
+          color: #ffffff !important; 
+          transform: translate(-1px, -1px);
+          box-shadow: 3px 3px 0px #000000 !important;
+        }
+        .refresh-btn:hover svg {
+          stroke: #ffffff !important;
+        }
         .spinning {
           animation: spin 1s linear infinite;
         }
@@ -143,78 +166,133 @@ export default function AIInsights({ repoUrl, languages, contributors, commitHis
         .insights-results {
           display: flex;
           flex-direction: column;
-          gap: 12px;
+          gap: 16px;
         }
         .insight-block {
-          padding: 14px;
-          background: #17171e;
-          border: 1px solid var(--border);
-          border-radius: 8px;
+          padding: 18px 20px;
+          background: #ffffff !important;
+          border: 2px solid #000000 !important;
+          box-shadow: 4px 4px 0px #000000 !important;
+          border-radius: 0px !important;
+          color: #000000 !important;
         }
         .insight-block h5 {
-          margin: 0 0 10px;
+          margin: 0 0 14px;
           font-size: 13px;
-          color: #646cff;
+          color: #000000 !important;
           text-transform: uppercase;
-          letter-spacing: 0.5px;
+          letter-spacing: 1px;
+          font-family: 'Space Mono', monospace !important;
+          font-weight: 800 !important;
+          border-bottom: 2px solid #000000 !important;
+          padding-bottom: 8px;
         }
         .insight-block p {
           margin: 0;
-          font-size: 12.5px;
+          font-size: 13px;
           line-height: 1.6;
-          color: var(--text);
+          color: #000000 !important;
+          font-family: 'Space Mono', monospace !important;
+          font-weight: 600 !important;
         }
         .hotspot-suggestions {
           display: flex;
           flex-direction: column;
-          gap: 10px;
+          gap: 12px;
         }
         .suggestion-item {
-          padding: 10px;
-          background: #23232b;
-          border: 1px solid var(--border);
-          border-radius: 6px;
+          padding: 14px 16px;
+          background: #ffffff !important;
+          border: 2px solid #000000 !important;
+          box-shadow: 3px 3px 0px #000000 !important;
+          border-radius: 0px !important;
+          color: #000000 !important;
         }
         .suggestion-item .file-header {
           display: flex;
           align-items: center;
           gap: 8px;
-          margin-bottom: 6px;
-          font-size: 12px;
-          font-weight: 600;
+          margin-bottom: 8px;
+          font-size: 13px;
+          font-weight: 800;
+          color: #000000 !important;
+          font-family: 'Space Mono', monospace !important;
+        }
+        .suggestion-item .file-header .icon {
+          color: #000000 !important;
+          stroke: #000000 !important;
         }
         .suggestion-item .file-path {
-          font-family: monospace;
+          font-family: 'Space Mono', monospace !important;
+          font-size: 13px;
+          font-weight: 800;
+          color: #000000 !important;
           flex: 1;
         }
         .suggestion-item .badge {
-          font-size: 9px;
-          padding: 1px 6px;
-          border-radius: 4px;
+          font-family: 'Space Mono', monospace !important;
+          font-size: 10px;
+          font-weight: 800;
+          padding: 3px 8px;
+          border-radius: 0px !important;
           text-transform: uppercase;
+          letter-spacing: 0.6px;
         }
-        .suggestion-item .badge.high-risk { background: rgba(255, 71, 71, 0.15); color: #ff4747; }
-        .suggestion-item .badge.medium-risk { background: rgba(255, 170, 0, 0.15); color: #ffaa00; }
-        .suggestion-item .badge.low-risk { background: rgba(0, 229, 117, 0.15); color: #00e575; }
+        .suggestion-item .badge.high-risk { 
+          background: #000000 !important; 
+          color: #ffffff !important; 
+          border: 1.5px solid #000000 !important; 
+        }
+        .suggestion-item .badge.medium-risk { 
+          background: #ffffff !important; 
+          color: #000000 !important; 
+          border: 1.5px solid #000000 !important; 
+          box-shadow: 1.5px 1.5px 0px #000000 !important;
+        }
+        .suggestion-item .badge.low-risk { 
+          background: #f4f4f5 !important; 
+          color: #000000 !important; 
+          border: 1.5px solid #000000 !important; 
+        }
         .suggestion-item .reason {
-          font-size: 11.5px;
-          color: var(--muted);
+          font-size: 12.5px;
+          color: #18181b !important;
+          font-family: 'Space Mono', monospace !important;
+          font-weight: 600 !important;
+          line-height: 1.6;
           margin: 0;
         }
         .tips-list {
           margin: 0;
-          padding-left: 18px;
-          font-size: 12px;
+          padding-left: 20px;
+          font-size: 12.5px;
           display: flex;
           flex-direction: column;
-          gap: 6px;
-          color: var(--muted);
+          gap: 8px;
+          color: #18181b !important;
+          font-family: 'Space Mono', monospace !important;
+          font-weight: 600 !important;
+        }
+        .tips-list li {
+          line-height: 1.6;
         }
         .loading-state {
           text-align: center;
           padding: 30px 0;
           font-size: 12px;
-          color: var(--muted);
+          color: #000000 !important;
+          font-family: 'Space Mono', monospace !important;
+          font-weight: 700 !important;
+        }
+        .error {
+          padding: 12px 14px;
+          background: #ffffff !important;
+          border: 2px solid #000000 !important;
+          box-shadow: 2px 2px 0px #000000 !important;
+          color: #000000 !important;
+          font-family: 'Space Mono', monospace !important;
+          font-size: 12px;
+          font-weight: 700;
         }
       `}</style>
     </div>

@@ -9,11 +9,12 @@ const hasToken = process.env.GITHUB_TOKEN &&
                  process.env.GITHUB_TOKEN !== "api key goes here" && 
                  process.env.GITHUB_TOKEN.trim() !== "";
 const octokit = new Octokit({
-  auth: hasToken ? process.env.GITHUB_TOKEN : undefined,
+  auth: hasToken ? process.env.GITHUB_TOKEN.trim() : undefined,
+  userAgent: 'GitRepoVisualizer/1.0.0'
 });
 
 const getMockFallback = (owner, repo) => {
-  return !hasToken || owner === 'demo' || repo === 'demo';
+  return owner === 'demo' || repo === 'demo';
 };
 
 // Caching helpers
@@ -67,10 +68,19 @@ router.get('/streaks/:owner/:repo', async (req, res) => {
         date: c.commit?.author?.date || c.commit?.committer?.date || new Date().toISOString()
       }));
 
-      contributors = contribRes.data.map(c => ({
+      contributors = (contribRes.data || []).map(c => ({
         login: c.login,
         avatar: c.avatar_url
       }));
+
+      // Fallback if listContributors was empty but commits exist
+      if (contributors.length === 0 && commitData.length > 0) {
+        const uniqueAuthors = Array.from(new Set(commitData.map(c => c.author).filter(Boolean)));
+        contributors = uniqueAuthors.slice(0, 5).map(login => ({
+          login,
+          avatar: `https://github.com/${login}.png`
+        }));
+      }
     }
 
     const streakList = contributors.map(contrib => {

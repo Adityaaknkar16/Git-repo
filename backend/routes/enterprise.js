@@ -10,11 +10,12 @@ const hasToken = process.env.GITHUB_TOKEN &&
                  process.env.GITHUB_TOKEN !== "api key goes here" && 
                  process.env.GITHUB_TOKEN.trim() !== "";
 const octokit = new Octokit({
-  auth: hasToken ? process.env.GITHUB_TOKEN : undefined,
+  auth: hasToken ? process.env.GITHUB_TOKEN.trim() : undefined,
+  userAgent: 'GitRepoVisualizer/1.0.0'
 });
 
 const getMockFallback = (owner, repo) => {
-  return !hasToken || owner === 'demo' || repo === 'demo';
+  return owner === 'demo' || repo === 'demo';
 };
 
 // Caching helpers (safe in-memory or mongo)
@@ -36,7 +37,7 @@ router.get('/org/:orgName', async (req, res) => {
 
     let reposList = [];
 
-    if (!hasToken || orgName === 'demo') {
+    if (orgName === 'demo') {
       // Return high-quality mock org repos
       reposList = [
         { name: 'core-frontend', healthScore: 92, language: 'TypeScript', stars: 1204, lastActive: '2026-06-18T10:00:00Z', busFactorRisk: 'Low' },
@@ -46,7 +47,10 @@ router.get('/org/:orgName', async (req, res) => {
       ];
     } else {
       // Live fetch
-      const orgRepos = await octokit.repos.listForOrg({ org: orgName, per_page: 30 }).catch(() => ({ data: [] }));
+      let orgRepos = await octokit.repos.listForOrg({ org: orgName, per_page: 30 }).catch(async () => {
+        // Fallback: If orgName is a user account, try listForUser
+        return await octokit.repos.listForUser({ username: orgName, per_page: 30 }).catch(() => ({ data: [] }));
+      });
       reposList = orgRepos.data.map(r => {
         // Calculate mock health score dynamically based on stars/forks to make the org dashboard fast
         const score = Math.min(100, Math.max(30, Math.floor(Math.random() * 40) + (r.stargazers_count > 100 ? 55 : 45)));

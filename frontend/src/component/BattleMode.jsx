@@ -195,45 +195,45 @@ export default function BattleMode() {
           {/* Metric Comparison Table */}
           <div className="comparison-table glass-panel">
             {/* Stars */}
-            <div className={`comparison-row ${result.categoryWinners.stars ? 'win-a' : 'win-b'}`}>
-              <div className={`comp-val ${result.categoryWinners.stars ? 'win' : ''}`}>{result.repoA.stars.toLocaleString()}</div>
+            <div className={`comparison-row ${result.categoryWinners?.stars ? 'win-a' : 'win-b'}`}>
+              <div className={`comp-val ${result.categoryWinners?.stars ? 'win' : ''}`}>{(result.repoA?.stars || 0).toLocaleString()}</div>
               <div className="comp-label">⭐ Stars</div>
-              <div className={`comp-val ${!result.categoryWinners.stars ? 'win' : ''}`}>{result.repoB.stars.toLocaleString()}</div>
+              <div className={`comp-val ${!result.categoryWinners?.stars ? 'win' : ''}`}>{(result.repoB?.stars || 0).toLocaleString()}</div>
             </div>
 
             {/* Forks */}
-            <div className={`comparison-row ${result.categoryWinners.forks ? 'win-a' : 'win-b'}`}>
-              <div className={`comp-val ${result.categoryWinners.forks ? 'win' : ''}`}>{result.repoA.forks.toLocaleString()}</div>
+            <div className={`comparison-row ${result.categoryWinners?.forks ? 'win-a' : 'win-b'}`}>
+              <div className={`comp-val ${result.categoryWinners?.forks ? 'win' : ''}`}>{(result.repoA?.forks || 0).toLocaleString()}</div>
               <div className="comp-label">🍴 Forks</div>
-              <div className={`comp-val ${!result.categoryWinners.forks ? 'win' : ''}`}>{result.repoB.forks.toLocaleString()}</div>
+              <div className={`comp-val ${!result.categoryWinners?.forks ? 'win' : ''}`}>{(result.repoB?.forks || 0).toLocaleString()}</div>
             </div>
 
             {/* Issues */}
-            <div className={`comparison-row ${result.categoryWinners.issues ? 'win-a' : 'win-b'}`}>
-              <div className={`comp-val ${result.categoryWinners.issues ? 'win' : ''}`}>{result.repoA.issues}</div>
+            <div className={`comparison-row ${result.categoryWinners?.issues ? 'win-a' : 'win-b'}`}>
+              <div className={`comp-val ${result.categoryWinners?.issues ? 'win' : ''}`}>{result.repoA?.issues ?? 0}</div>
               <div className="comp-label">⚠️ Open Issues (Lower is better)</div>
-              <div className={`comp-val ${!result.categoryWinners.issues ? 'win' : ''}`}>{result.repoB.issues}</div>
+              <div className={`comp-val ${!result.categoryWinners?.issues ? 'win' : ''}`}>{result.repoB?.issues ?? 0}</div>
             </div>
 
             {/* Commit Velocity */}
-            <div className={`comparison-row ${result.categoryWinners.commits30Days ? 'win-a' : 'win-b'}`}>
-              <div className={`comp-val ${result.categoryWinners.commits30Days ? 'win' : ''}`}>{result.repoA.commits30Days}</div>
+            <div className={`comparison-row ${result.categoryWinners?.commits30Days ? 'win-a' : 'win-b'}`}>
+              <div className={`comp-val ${result.categoryWinners?.commits30Days ? 'win' : ''}`}>{result.repoA?.commits30Days ?? 0}</div>
               <div className="comp-label">⚡ Commits (30d)</div>
-              <div className={`comp-val ${!result.categoryWinners.commits30Days ? 'win' : ''}`}>{result.repoB.commits30Days}</div>
+              <div className={`comp-val ${!result.categoryWinners?.commits30Days ? 'win' : ''}`}>{result.repoB?.commits30Days ?? 0}</div>
             </div>
 
             {/* Contributors */}
-            <div className={`comparison-row ${result.categoryWinners.contributors ? 'win-a' : 'win-b'}`}>
-              <div className={`comp-val ${result.categoryWinners.contributors ? 'win' : ''}`}>{result.repoA.contributors}</div>
+            <div className={`comparison-row ${result.categoryWinners?.contributors ? 'win-a' : 'win-b'}`}>
+              <div className={`comp-val ${result.categoryWinners?.contributors ? 'win' : ''}`}>{result.repoA?.contributors ?? 0}</div>
               <div className="comp-label">👥 Contributors</div>
-              <div className={`comp-val ${!result.categoryWinners.contributors ? 'win' : ''}`}>{result.repoB.contributors}</div>
+              <div className={`comp-val ${!result.categoryWinners?.contributors ? 'win' : ''}`}>{result.repoB?.contributors ?? 0}</div>
             </div>
 
             {/* PR Merge Speed */}
-            <div className={`comparison-row ${result.categoryWinners.prSpeedDays ? 'win-a' : 'win-b'}`}>
-              <div className={`comp-val ${result.categoryWinners.prSpeedDays ? 'win' : ''}`}>{result.repoA.prSpeedDays} days</div>
+            <div className={`comparison-row ${result.categoryWinners?.prSpeedDays ? 'win-a' : 'win-b'}`}>
+              <div className={`comp-val ${result.categoryWinners?.prSpeedDays ? 'win' : ''}`}>{result.repoA?.prSpeedDays ?? 0} days</div>
               <div className="comp-label">⏱️ Avg PR Merge Time (Lower is better)</div>
-              <div className={`comp-val ${!result.categoryWinners.prSpeedDays ? 'win' : ''}`}>{result.repoB.prSpeedDays} days</div>
+              <div className={`comp-val ${!result.categoryWinners?.prSpeedDays ? 'win' : ''}`}>{result.repoB?.prSpeedDays ?? 0} days</div>
             </div>
           </div>
         </div>

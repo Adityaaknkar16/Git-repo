@@ -67,9 +67,10 @@ export default function FileHotspots({ hotspots }) {
         }
         .hotspot-filter {
           padding: 12px 16px;
-          background: #17171e;
-          border: 1px solid var(--border);
-          border-radius: 8px;
+          background: #ffffff;
+          border: 2px solid #000000;
+          box-shadow: 2px 2px 0px #000000;
+          border-radius: 4px;
           display: flex;
           flex-direction: column;
           gap: 8px;
@@ -79,6 +80,8 @@ export default function FileHotspots({ hotspots }) {
           align-items: center;
           justify-content: space-between;
           font-size: 13px;
+          font-weight: 700;
+          color: #000000;
         }
         .flame-icon {
           animation: pulse 1.5s infinite alternate;
@@ -90,19 +93,21 @@ export default function FileHotspots({ hotspots }) {
         .slider {
           -webkit-appearance: none;
           width: 100%;
-          height: 6px;
-          border-radius: 3px;
-          background: #2b2b36;
+          height: 8px;
+          border-radius: 4px;
+          background: #e0e0e0;
+          border: 1px solid #000000;
           outline: none;
         }
         .slider::-webkit-slider-thumb {
           -webkit-appearance: none;
           appearance: none;
-          width: 14px;
-          height: 14px;
+          width: 16px;
+          height: 16px;
           border-radius: 50%;
-          background: var(--accent);
+          background: #000000;
           cursor: pointer;
+          border: 2px solid #000000;
         }
         .hotspots-list {
           display: flex;
@@ -113,18 +118,19 @@ export default function FileHotspots({ hotspots }) {
           padding-right: 4px;
         }
         .hotspot-card {
-          padding: 12px;
-          background: #17171e;
-          border: 1px solid var(--border);
-          border-radius: 8px;
+          padding: 12px 14px;
+          background: #ffffff;
+          border: 2px solid #000000;
+          box-shadow: 2px 2px 0px #000000;
+          border-radius: 4px;
           display: flex;
           justify-content: space-between;
           align-items: center;
-          transition: transform 0.2s ease, border-color 0.2s ease;
+          transition: transform 0.15s ease, box-shadow 0.15s ease;
         }
         .hotspot-card:hover {
-          transform: translateX(4px);
-          border-color: #4a4a58;
+          transform: translate(-1px, -1px);
+          box-shadow: 4px 4px 0px #000000;
         }
         .hotspot-main {
           display: flex;
@@ -134,7 +140,7 @@ export default function FileHotspots({ hotspots }) {
           flex: 1;
         }
         .file-icon {
-          color: var(--muted);
+          color: #000000;
           flex-shrink: 0;
         }
         .file-details {
@@ -144,25 +150,34 @@ export default function FileHotspots({ hotspots }) {
         }
         .file-path {
           font-family: monospace;
-          font-size: 12px;
+          font-size: 13px;
+          font-weight: 700;
+          color: #000000;
           white-space: nowrap;
           overflow: hidden;
           text-overflow: ellipsis;
         }
         .file-meta {
           font-size: 11px;
-          color: var(--muted);
+          color: #555555;
+          font-weight: 600;
         }
         .hotspot-badge {
           padding: 4px 8px;
-          border-radius: 6px;
+          border-radius: 2px;
           font-size: 11px;
-          font-weight: 600;
+          font-weight: 800;
           flex-shrink: 0;
+          border: 2px solid #000000 !important;
+          background: #ffffff !important;
+        }
+        .hotspot-badge span {
+          color: #000000 !important;
         }
         .no-data {
           font-size: 13px;
-          color: var(--muted);
+          font-weight: 700;
+          color: #000000;
           text-align: center;
           padding: 20px 0;
           margin: 0;

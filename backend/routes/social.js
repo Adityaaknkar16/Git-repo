@@ -22,11 +22,12 @@ const hasToken = process.env.GITHUB_TOKEN &&
                  process.env.GITHUB_TOKEN !== "api key goes here" && 
                  process.env.GITHUB_TOKEN.trim() !== "";
 const octokit = new Octokit({
-  auth: hasToken ? process.env.GITHUB_TOKEN : undefined,
+  auth: hasToken ? process.env.GITHUB_TOKEN.trim() : undefined,
+  userAgent: 'GitRepoVisualizer/1.0.0'
 });
 
 const getMockFallback = (owner, repo) => {
-  return !hasToken || owner === 'demo' || repo === 'demo';
+  return owner === 'demo' || repo === 'demo';
 };
 
 // Caching helpers
@@ -149,17 +150,39 @@ router.get('/wrapped/:owner/:repo', async (req, res) => {
         if (cnt > monthCounts[maxMonthIndex]) maxMonthIndex = idx;
       });
 
-      const topContributor = Object.keys(authors).sort((a, b) => authors[b] - authors[a])[0] || 'Unknown';
-      const mostUsedWord = Object.keys(words).sort((a, b) => words[b] - words[a])[0] || 'update';
+      // Calculate real daily streak
+      const commitDays = new Set();
+      commitsRes.data.forEach(c => {
+        const d = c.commit?.author?.date || c.commit?.committer?.date;
+        if (d) commitDays.add(new Date(d).toISOString().slice(0, 10));
+      });
+      const sortedDays = Array.from(commitDays).sort();
+      let calculatedStreak = 0;
+      let currentStreak = 0;
+      for (let i = 0; i < sortedDays.length; i++) {
+        if (i === 0) {
+          currentStreak = 1;
+        } else {
+          const prev = new Date(sortedDays[i - 1]);
+          const curr = new Date(sortedDays[i]);
+          const diffDays = Math.round((curr - prev) / (1000 * 60 * 60 * 24));
+          if (diffDays === 1) {
+            currentStreak++;
+          } else {
+            currentStreak = 1;
+          }
+        }
+        if (currentStreak > calculatedStreak) calculatedStreak = currentStreak;
+      }
 
       wrappedData = {
         year,
-        totalCommits: totalCommits || 120,
-        mostActiveMonth: months[maxMonthIndex],
-        topContributor,
+        totalCommits: totalCommits,
+        mostActiveMonth: totalCommits > 0 ? months[maxMonthIndex] : 'N/A',
+        topContributor: topContributor !== 'Unknown' ? topContributor : (owner || 'N/A'),
         mostChangedFile: 'package.json',
-        longestStreak: Math.floor(Math.random() * 8) + 3,
-        mostUsedWord
+        longestStreak: calculatedStreak,
+        mostUsedWord: totalCommits > 0 ? mostUsedWord : 'N/A'
       };
     }
 

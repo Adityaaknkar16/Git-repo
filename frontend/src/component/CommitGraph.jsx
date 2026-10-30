@@ -13,12 +13,17 @@ export default function CommitGraph({ commits, defaultBranch }) {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedNode, setSelectedNode] = useState(null);
 
-  // Filter commits
-  const filteredCommits = commits.filter(c => {
-    const matchAuthor = filterAuthor ? c.author.toLowerCase().includes(filterAuthor.toLowerCase()) : true;
+  // Filter commits safely
+  const filteredCommits = (commits || []).filter(c => {
+    if (!c) return false;
+    const authorStr = String(c.author || '');
+    const msgStr = String(c.message || '');
+    const shaStr = String(c.sha || '');
+
+    const matchAuthor = filterAuthor ? authorStr.toLowerCase().includes(filterAuthor.toLowerCase()) : true;
     const matchSearch = searchTerm ? (
-      c.message.toLowerCase().includes(searchTerm.toLowerCase()) || 
-      c.sha.toLowerCase().includes(searchTerm.toLowerCase())
+      msgStr.toLowerCase().includes(searchTerm.toLowerCase()) || 
+      shaStr.toLowerCase().includes(searchTerm.toLowerCase())
     ) : true;
     return matchAuthor && matchSearch;
   });
@@ -48,8 +53,9 @@ export default function CommitGraph({ commits, defaultBranch }) {
     const svg = d3.select(svgRef.current)
       .attr('width', '100%')
       .attr('height', height)
-      .style('background', '#13131a')
-      .style('border-radius', '12px');
+      .style('background', '#ffffff')
+      .style('border', '2px solid #000000')
+      .style('box-shadow', '4px 4px 0px #000000');
 
     const g = svg.append('g');
 
@@ -69,7 +75,7 @@ export default function CommitGraph({ commits, defaultBranch }) {
       // Lay out horizontally by date order (newest on right or left)
       x: width - 80 - i * 110,
       // Stagger y based on author or index to show branch branches
-      y: height / 2 + (i % 2 === 0 ? -40 : 40) + (c.author.length % 3) * 15,
+      y: height / 2 + (i % 2 === 0 ? -40 : 40) + (((c.author ? c.author.length : 3) % 3) * 15),
     }));
 
     // Find links (parent connections)
@@ -77,7 +83,7 @@ export default function CommitGraph({ commits, defaultBranch }) {
     nodes.forEach(node => {
       if (node.parents) {
         node.parents.forEach(parentSha => {
-          const targetNode = nodes.find(n => n.sha === parentSha || parentSha.startsWith(n.sha) || n.sha.startsWith(parentSha));
+          const targetNode = nodes.find(n => n.sha === parentSha || (parentSha && parentSha.startsWith(n.sha)) || (n.sha && n.sha.startsWith(parentSha)));
           if (targetNode) {
             links.push({
               source: node,
@@ -90,14 +96,13 @@ export default function CommitGraph({ commits, defaultBranch }) {
 
     // Draw link lines (curves)
     g.append('g')
-      .attr('stroke', '#4a4e69')
+      .attr('stroke', '#000000')
       .attr('stroke-width', 2.5)
       .attr('fill', 'none')
       .selectAll('path')
       .data(links)
       .join('path')
       .attr('d', d => {
-        // Curve between source and target
         const dx = d.target.x - d.source.x;
         const dy = d.target.y - d.source.y;
         const dr = Math.sqrt(dx * dx + dy * dy) * 1.2;
@@ -115,35 +120,40 @@ export default function CommitGraph({ commits, defaultBranch }) {
         setSelectedNode(d);
       });
 
-    // Node outer glow
+    // Node outer rim
     nodeGroup.append('circle')
       .attr('r', 12)
-      .attr('fill', '#646cff')
-      .attr('opacity', 0.25);
+      .attr('fill', '#000000')
+      .attr('opacity', 0.1);
 
     // Node body
     nodeGroup.append('circle')
       .attr('r', 8)
-      .attr('fill', d => d.sha === commits[0]?.sha ? '#00e575' : '#646cff')
-      .attr('stroke', '#ffffff')
-      .attr('stroke-width', 2);
+      .attr('fill', d => d.sha === (commits && commits[0]?.sha) ? '#000000' : '#ffffff')
+      .attr('stroke', '#000000')
+      .attr('stroke-width', 2.5);
 
     // Short SHA Labels
     nodeGroup.append('text')
       .attr('dy', -15)
       .attr('text-anchor', 'middle')
-      .attr('fill', '#e6e6e6')
+      .attr('fill', '#000000')
       .style('font-size', '11px')
       .style('font-family', 'monospace')
+      .style('font-weight', '700')
       .text(d => d.sha);
 
     // Short Message Labels (trimmed)
     nodeGroup.append('text')
       .attr('dy', 25)
       .attr('text-anchor', 'middle')
-      .attr('fill', '#a0a0a0')
+      .attr('fill', '#333333')
       .style('font-size', '10px')
-      .text(d => d.message.length > 15 ? d.message.substring(0, 15) + '...' : d.message);
+      .style('font-family', 'monospace')
+      .text(d => {
+        const m = String(d.message || '');
+        return m.length > 15 ? m.substring(0, 15) + '...' : m;
+      });
 
     // Default zoom layout centered on first commit
     if (nodes.length > 0) {
@@ -219,54 +229,65 @@ export default function CommitGraph({ commits, defaultBranch }) {
         .filter-input-group input {
           width: 100%;
           padding: 8px 12px 8px 32px;
-          border-radius: 8px;
-          border: 1px solid var(--border);
-          background: #18181f;
-          color: var(--text);
+          border-radius: 4px;
+          border: 2px solid #000000;
+          background: #ffffff;
+          color: #000000;
+          font-family: monospace;
           font-size: 13px;
+          font-weight: 600;
         }
         .reset-btn {
           display: flex;
           align-items: center;
           gap: 6px;
-          padding: 8px 12px;
-          background: #23232b;
-          border: 1px solid var(--border);
-          border-radius: 8px;
-          color: var(--text);
+          padding: 8px 14px;
+          background: #ffffff;
+          border: 2px solid #000000;
+          box-shadow: 2px 2px 0px #000000;
+          border-radius: 4px;
+          color: #000000;
           cursor: pointer;
+          font-family: monospace;
           font-size: 13px;
+          font-weight: 700;
         }
         .reset-btn:hover {
-          background: #2e2e38;
+          background: #000000;
+          color: #ffffff;
         }
         .node-detail-panel {
           position: absolute;
           bottom: 15px;
           left: 15px;
           right: 15px;
-          background: rgba(23, 23, 27, 0.95);
-          border: 1px solid var(--border);
-          border-radius: 8px;
+          background: #ffffff;
+          border: 2px solid #000000;
+          box-shadow: 4px 4px 0px #000000;
+          border-radius: 4px;
           padding: 14px;
           z-index: 10;
-          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
-          backdrop-filter: blur(12px);
+          color: #000000;
         }
         .node-detail-panel h3 {
           margin: 0 0 8px;
           font-size: 14px;
-          color: #646cff;
+          font-weight: 800;
+          color: #000000;
+          text-transform: uppercase;
         }
         .node-detail-panel p {
           margin: 4px 0;
           font-size: 12px;
+          color: #111111;
         }
         .sha-txt {
           font-family: monospace;
-          background: #111;
-          padding: 2px 4px;
-          border-radius: 4px;
+          background: #000000;
+          color: #ffffff;
+          padding: 2px 6px;
+          border-radius: 2px;
+          font-weight: 700;
         }
         .close-btn {
           position: absolute;
@@ -274,8 +295,9 @@ export default function CommitGraph({ commits, defaultBranch }) {
           right: 12px;
           background: none;
           border: none;
-          color: var(--muted);
+          color: #000000;
           font-size: 18px;
+          font-weight: 800;
           cursor: pointer;
         }
         @media (max-width: 600px) {

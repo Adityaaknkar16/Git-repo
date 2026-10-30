@@ -73,12 +73,14 @@ export default function PRTracker({ prs = [] }) {
         }
         .pr-card {
           padding: 14px;
-          background: #17171e;
-          border: 1px solid var(--border);
-          border-radius: 8px;
+          background: #ffffff;
+          border: 2px solid #000000;
+          box-shadow: 2px 2px 0px #000000;
+          border-radius: 4px;
           display: flex;
           flex-direction: column;
           gap: 10px;
+          color: #000000;
         }
         .pr-header {
           display: flex;
@@ -90,35 +92,37 @@ export default function PRTracker({ prs = [] }) {
           display: flex;
           gap: 8px;
           align-items: center;
-          font-weight: 500;
-          font-size: 13px;
+          font-weight: 700;
+          font-size: 14px;
+          color: #000000;
         }
         .id-tag {
-          color: var(--muted);
+          color: #555555;
           margin-left: 4px;
         }
         .state-icon {
           flex-shrink: 0;
+          color: #000000;
         }
-        .state-icon.open { color: #39d353; }
-        .state-icon.merged { color: #a371f7; }
-        .state-icon.closed { color: #ff5555; }
         .status-badge {
-          font-size: 10px;
+          font-size: 11px;
           text-transform: uppercase;
-          padding: 2px 6px;
-          border-radius: 4px;
-          font-weight: 600;
+          padding: 3px 8px;
+          border-radius: 2px;
+          font-weight: 800;
+          border: 2px solid #000000;
+          background: #ffffff;
+          color: #000000;
         }
-        .status-badge.open { background: rgba(57, 211, 83, 0.15); color: #39d353; }
-        .status-badge.merged { background: rgba(163, 113, 247, 0.15); color: #a371f7; }
-        .status-badge.closed { background: rgba(255, 85, 85, 0.15); color: #ff5555; }
+        .status-badge.merged { background: #000000; color: #ffffff; }
+        .status-badge.closed { background: #555555; color: #ffffff; }
+        .status-badge.open { background: #ffffff; color: #000000; }
         .pr-details {
           display: flex;
           justify-content: space-between;
           align-items: center;
           font-size: 12px;
-          color: var(--muted);
+          color: #333333;
           flex-wrap: wrap;
           gap: 8px;
         }
@@ -129,46 +133,55 @@ export default function PRTracker({ prs = [] }) {
         }
         .branch-name {
           font-family: monospace;
-          background: #23232b;
+          background: #f0f0f0;
+          border: 1px solid #000000;
           padding: 2px 6px;
-          border-radius: 4px;
-          color: var(--text);
+          border-radius: 2px;
+          color: #000000;
+          font-weight: 700;
         }
         .branch-name.base {
-          background: #1e1e24;
+          background: #000000;
+          color: #ffffff;
         }
-        .arrow { color: var(--muted); }
+        .arrow { color: #000000; font-weight: 800; }
         .author-info {
           display: flex;
           align-items: center;
           gap: 6px;
+          font-weight: 600;
+          color: #000000;
         }
         .user-avatar {
-          width: 20px;
-          height: 20px;
+          width: 22px;
+          height: 22px;
           border-radius: 50%;
+          border: 1px solid #000000;
         }
         .linked-commits {
-          border-top: 1px solid var(--border);
+          border-top: 1px solid #000000;
           padding-top: 8px;
           display: flex;
           align-items: center;
           gap: 8px;
-          font-size: 11px;
+          font-size: 12px;
         }
         .linked-commits .label {
-          color: var(--muted);
+          color: #000000;
+          font-weight: 700;
         }
         .commit-sha {
           font-family: monospace;
-          background: #111;
-          color: var(--accent);
-          padding: 1px 4px;
-          border-radius: 4px;
+          background: #000000;
+          color: #ffffff;
+          padding: 2px 6px;
+          border-radius: 2px;
+          font-weight: 700;
         }
         .no-data {
           font-size: 13px;
-          color: var(--muted);
+          font-weight: 700;
+          color: #000000;
           text-align: center;
           padding: 20px 0;
           margin: 0;

@@ -11,11 +11,12 @@ const hasToken = process.env.GITHUB_TOKEN &&
                  process.env.GITHUB_TOKEN !== "api key goes here" && 
                  process.env.GITHUB_TOKEN.trim() !== "";
 const octokit = new Octokit({
-  auth: hasToken ? process.env.GITHUB_TOKEN : undefined,
+  auth: hasToken ? process.env.GITHUB_TOKEN.trim() : undefined,
+  userAgent: 'GitRepoVisualizer/1.0.0'
 });
 
 const getMockFallback = (owner, repo) => {
-  return !hasToken || owner === 'demo' || repo === 'demo';
+  return owner === 'demo' || repo === 'demo';
 };
 
 // Caching helper
@@ -61,11 +62,12 @@ router.get('/sentiment/:owner/:repo', async (req, res) => {
         });
       }
     } else {
-      // Live fetch last 500 commits (pagination, 5 pages of 100)
+      // Live fetch commits (bounded pagination to conserve GitHub API rate limits)
+      const maxPages = hasToken ? 3 : 1;
       let pageCommits = [];
-      for (let page = 1; page <= 5; page++) {
+      for (let page = 1; page <= maxPages; page++) {
         const resPage = await octokit.repos.listCommits({ owner, repo, per_page: 100, page }).catch(() => ({ data: [] }));
-        if (resPage.data.length === 0) break;
+        if (!resPage.data || resPage.data.length === 0) break;
         pageCommits = pageCommits.concat(resPage.data);
       }
 
@@ -120,11 +122,12 @@ router.get('/churn/:owner/:repo', async (req, res) => {
         path: f
       }));
     } else {
-      // Fetch last 50 commits and gather additions/deletions per file
-      const commitsRes = await octokit.repos.listCommits({ owner, repo, per_page: 30 }).catch(() => ({ data: [] }));
+      // Fetch recent commits and gather additions/deletions per file (top 10 to prevent 403 rate-limit)
+      const commitsRes = await octokit.repos.listCommits({ owner, repo, per_page: hasToken ? 20 : 10 }).catch(() => ({ data: [] }));
       const churnMap = {};
 
-      const detailPromises = commitsRes.data.map(c => 
+      const commitsToInspect = (commitsRes.data || []).slice(0, 10);
+      const detailPromises = commitsToInspect.map(c => 
         octokit.repos.getCommit({ owner, repo, ref: c.sha }).catch(() => null)
       );
       const details = await Promise.all(detailPromises);
@@ -180,9 +183,10 @@ router.get('/releases/:owner/:repo', async (req, res) => {
         { name: 'v1.0.0', date: new Date(baseDate - 65 * 24 * 60 * 60 * 1000).toISOString() },
       ];
     } else {
-      // Live Fetch
-      const tagsRes = await octokit.repos.listTags({ owner, repo, per_page: 30 }).catch(() => ({ data: [] }));
-      const tagDetails = await Promise.all(tagsRes.data.map(async tag => {
+      // Live Fetch (limit to top 10 tags to conserve rate limits)
+      const tagsRes = await octokit.repos.listTags({ owner, repo, per_page: 15 }).catch(() => ({ data: [] }));
+      const tagsToInspect = (tagsRes.data || []).slice(0, 10);
+      const tagDetails = await Promise.all(tagsToInspect.map(async tag => {
         const commitRes = await octokit.git.getCommit({ owner, repo, commit_sha: tag.commit.sha }).catch(() => null);
         return {
           name: tag.name,

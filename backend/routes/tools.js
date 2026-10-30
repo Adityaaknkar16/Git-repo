@@ -9,11 +9,12 @@ const hasToken = process.env.GITHUB_TOKEN &&
                  process.env.GITHUB_TOKEN !== "api key goes here" && 
                  process.env.GITHUB_TOKEN.trim() !== "";
 const octokit = new Octokit({
-  auth: hasToken ? process.env.GITHUB_TOKEN : undefined,
+  auth: hasToken ? process.env.GITHUB_TOKEN.trim() : undefined,
+  userAgent: 'GitRepoVisualizer/1.0.0'
 });
 
 const getMockFallback = (owner, repo) => {
-  return !hasToken || owner === 'demo' || repo === 'demo';
+  return owner === 'demo' || repo === 'demo';
 };
 
 // Caching helpers (safe in-memory or mongo)
